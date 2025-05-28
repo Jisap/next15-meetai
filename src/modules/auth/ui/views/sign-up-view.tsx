@@ -195,6 +195,11 @@ export const SignUpView = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <Button
                     disabled={pending}
+                    onClick={() => {
+                      authClient.signIn.social({
+                        provider: "google"
+                      })
+                    }}
                     variant="outline"
                     type="button"
                     className="w-full"
@@ -203,6 +208,11 @@ export const SignUpView = () => {
                   </Button>
                   <Button
                     disabled={pending}
+                    onClick={() => {
+                      authClient.signIn.social({
+                        provider: "github"
+                      })
+                    }}
                     variant="outline"
                     type="button"
                     className="w-full"
@@ -212,7 +222,7 @@ export const SignUpView = () => {
                 </div>
 
                 <div className="text-center text-sm">
-                  You have an account ?{" "}
+                  Already have an account ?{" "}
                   <Link href="/sign-in" className="underline underline-offset-4 hover:text-green-700">
                     Sign in
                   </Link>
