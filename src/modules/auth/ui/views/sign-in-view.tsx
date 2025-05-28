@@ -21,6 +21,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { authClient } from "@/lib/auth-client"
+import { set } from "date-fns"
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -34,15 +35,18 @@ export const SignInView = () => {
 
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     setError(null);
+    setPending(true);
 
     authClient.signIn.email({
       email: data.email,
       password: data.password,
     },{
       onSuccess: () => {
+        setPending(false);
         router.push("/");
       },
       onError: ({ error }) => {
@@ -126,6 +130,7 @@ export const SignInView = () => {
                 )}
 
                 <Button
+                 disabled={pending}
                   type="submit"
                   className="w-full"
                 >
@@ -140,6 +145,7 @@ export const SignInView = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <Button
+                    disabled={pending}
                     variant="outline"
                     type="button"
                     className="w-full"
@@ -147,6 +153,7 @@ export const SignInView = () => {
                     Google
                   </Button>
                   <Button
+                    disabled={pending}
                     variant="outline"
                     type="button"
                     className="w-full"
