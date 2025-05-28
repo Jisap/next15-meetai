@@ -17,6 +17,10 @@ import {
 import { Alert, AlertTitle } from "@/components/ui/alert"
 import { OctagonAlertIcon } from "lucide-react"
 import { useForm } from "react-hook-form"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { authClient } from "@/lib/auth-client"
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -27,6 +31,25 @@ const formSchema = z.object({
 
 
 export const SignInView = () => {
+
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+
+  const onSubmit = (data: z.infer<typeof formSchema>) => {
+    setError(null);
+
+    authClient.signIn.email({
+      email: data.email,
+      password: data.password,
+    },{
+      onSuccess: () => {
+        router.push("/");
+      },
+      onError: ({ error }) => {
+        setError(error.message);
+      }
+    })
+  }
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -43,7 +66,7 @@ export const SignInView = () => {
           <Form
             {...form}
           >
-            <form className="p-6 md:p-8">
+            <form className="p-6 md:p-8" onSubmit={form.handleSubmit(onSubmit)}>
               <div className="flex flex-col gap-6">
                 <div className="flex flex-col items-center text-center">
                   <h1 className="text-2xl font-bold">
@@ -95,10 +118,10 @@ export const SignInView = () => {
                   />
                 </div>
 
-                {true && (
+                {!!error && (
                   <Alert className="bg-destructive/10 border-none">
                     <OctagonAlertIcon className="h-4 w-4 !text-destructive" />
-                    <AlertTitle>Error</AlertTitle>
+                    <AlertTitle>{error}</AlertTitle>
                   </Alert>
                 )}
 
@@ -131,6 +154,13 @@ export const SignInView = () => {
                     Github
                   </Button>
                 </div>
+
+                <div className="text-center text-sm">
+                  Don&apos;t have an account ?{" "}
+                  <Link href="/sign-up" className="underline underline-offset-4 hover:text-green-700">
+                    Sign up
+                  </Link>
+                </div>
               </div>
             </form>
           </Form>
@@ -147,6 +177,10 @@ export const SignInView = () => {
           </div>  
         </CardContent>
       </Card>
+
+      <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
+        By clicking continue, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+      </div>
     </div>
   )
 }
