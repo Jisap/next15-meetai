@@ -21,7 +21,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { authClient } from "@/lib/auth-client"
-
+import { FaGithub, FaGoogle } from "react-icons/fa"
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
@@ -38,6 +38,7 @@ const formSchema = z.object({
 
 
 export const SignUpView = () => {
+  const router = useRouter();
 
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -50,10 +51,10 @@ export const SignUpView = () => {
       name: data.name,
       email: data.email,
       password: data.password,
-      callbackURL: "/"
     }, {
       onSuccess: () => {
         setPending(false);
+        router.push("/");
       },
       onError: ({ error }) => {
         setError(error.message);
@@ -217,7 +218,7 @@ export const SignUpView = () => {
                     type="button"
                     className="w-full"
                   >
-                    Google
+                    <FaGoogle />
                   </Button>
                   <Button
                     disabled={pending}
@@ -226,7 +227,7 @@ export const SignUpView = () => {
                     type="button"
                     className="w-full"
                   >
-                    Github
+                    <FaGithub />
                   </Button>
                 </div>
 

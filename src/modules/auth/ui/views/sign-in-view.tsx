@@ -19,7 +19,8 @@ import { useForm } from "react-hook-form"
 import Link from "next/link"
 import { useState } from "react"
 import { authClient } from "@/lib/auth-client"
-
+import { useRouter } from "next/navigation"
+import { FaGithub, FaGoogle } from "react-icons/fa"
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -30,6 +31,7 @@ const formSchema = z.object({
 
 
 export const SignInView = () => {
+  const router = useRouter();
 
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -41,10 +43,10 @@ export const SignInView = () => {
     authClient.signIn.email({
       email: data.email,
       password: data.password,
-      callbackURL: "/"
     },{
       onSuccess: () => {
         setPending(false);
+        router.push("/");
       },
       onError: ({ error }) => {
         setError(error.message);
@@ -165,7 +167,7 @@ export const SignInView = () => {
                     type="button"
                     className="w-full"
                   >
-                    Google
+                    <FaGoogle />
                   </Button>
                   <Button
                     disabled={pending}
@@ -174,7 +176,7 @@ export const SignInView = () => {
                     type="button"
                     className="w-full"
                   >
-                    Github
+                    <FaGithub />
                   </Button>
                 </div>
 
