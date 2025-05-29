@@ -18,6 +18,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { use } from "react"
+import { DashboardUserButton } from "./dashboard-user-button"
 
 const firstSection = [
   {
@@ -92,7 +93,44 @@ export const DashboardSidebar = () => {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        <div className="px-4 py-2">
+          <Separator className="opacity-10 text-[#5D6B68]" />
+        </div>
+
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {secondSection.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    className={cn(
+                      "h-10 border border-transparent hover:border-[#5D6B68]/10 sidebarGradientButton transition-all duration-300",
+                      pathname === item.href && "border-l-4 border-l-green-600  "
+                    )}
+                    isActive={pathname === item.href}
+                  >
+                    <Link href={item.href}>
+                      <item.icon className="size-5" />
+                      <span className="text-sm font-medium tracking-tigh">
+                        {item.label}
+                      </span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter className="text-white">
+        <div className="">
+          <DashboardUserButton />
+        </div>
+      </SidebarFooter>
+
     </Sidebar>
   )
 }
