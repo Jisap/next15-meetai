@@ -21,6 +21,7 @@ export const DashboardUserButton = () => {
   const router = useRouter()
 
   const { data, isPending } = authClient.useSession();
+  console.log("data", data)
   if(isPending || !data?.user){
     return null
   }
@@ -45,12 +46,13 @@ export const DashboardUserButton = () => {
             <AvatarImage 
               src={data.user.image}
             />
-            <AvatarFallback className="bg-slate-700 text-white font-semibold">
-              {data.user.name
-                ? data.user.name.charAt(0).toUpperCase()
-                : data.user.email
-                  ? data.user.email.charAt(0).toUpperCase()
-                  : "U"}
+            {/* Implemento este Fallback para el caso de que aun existiendo la imagen no se cargue por alguna razón */}
+            <AvatarFallback>
+              <GeneratedAvatar
+                seed={data.user.name}
+                variant="initials"
+                className="size-full"
+              />
             </AvatarFallback>
           </Avatar>
         ):(
