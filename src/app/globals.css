@@ -126,5 +126,5 @@
    Desde el 5% hasta el 30%: Habrá una transición (un degradado) desde el color sidebar-accent hacia el color sidebar con 50% de opacidad.
    Desde el 30% hasta el 100% (el resto del botón): Será del color sidebar con 50% de opacidad (sólido, ya que la transición es de sidebar/50 a sidebar/50). */
 .sidebarGradientButton {
-  @apply bg-linear-to-r/oklch from-sidebar-accent from-5% via-sidebar/50 via-30% to-sidebar/50;
+  @apply bg-linear-to-r/oklch from-sidebar-accent from-5% via-sidebar/50 via-70% to-sidebar/50 ;
 }
