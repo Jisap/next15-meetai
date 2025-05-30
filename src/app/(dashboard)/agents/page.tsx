@@ -1,9 +1,12 @@
-import React from 'react'
+import { AgentsView } from "@/modules/agents/server/ui/views/agents-view"
 
-const page = () => {
+
+const Page = () => {
   return (
-    <div>Agents</div>
+    <div>
+      <AgentsView />
+    </div>
   )
 }
 
-export default page
+export default Page
