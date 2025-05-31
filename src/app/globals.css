@@ -128,3 +128,10 @@
 .sidebarGradientButton {
   @apply bg-linear-to-r/oklch from-sidebar-accent from-5% via-sidebar/50 via-70% to-sidebar/50 ;
 }
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
