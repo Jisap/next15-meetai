@@ -1,5 +1,6 @@
 "use client"
 
+import { ErrorState } from "@/components/error-state"
 import { LoadingState } from "@/components/loading-state"
 import { useTRPC } from "@/trpc/client"
 import { useQuery } from "@tanstack/react-query"
@@ -24,7 +25,12 @@ export const AgentsView = () => {
 
   if(isError){
     return (
-      <div>Error</div>
+      <div className="flex flex-1 min-h-screen">
+        <ErrorState 
+          title="Error Loading Agents"
+          description="There was an error loading the agents. Please try again later."
+        />
+      </div>
     )
   }
 
