@@ -1,5 +1,6 @@
 "use client"
 
+import { LoadingState } from "@/components/loading-state"
 import { useTRPC } from "@/trpc/client"
 import { useQuery } from "@tanstack/react-query"
 
@@ -12,7 +13,12 @@ export const AgentsView = () => {
 
   if(isLoading){
     return (
-      <div>Loading...</div>
+      <div className="flex flex-1 min-h-screen">
+        <LoadingState 
+          title="Loading Agents"
+          description="This may take a few seconds..."
+        />
+      </div>
     )
   }
 
