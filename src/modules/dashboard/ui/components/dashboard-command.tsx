@@ -1,4 +1,4 @@
-import { CommandDialog, CommandInput, CommandList } from "@/components/ui/command"
+import { CommandResponsiveDialog, CommandInput, CommandList } from "@/components/ui/command"
 import { CommandItem } from "cmdk"
 import { Dispatch, SetStateAction } from "react"
 
@@ -10,7 +10,7 @@ interface Props {
 
 export  const DashboardCommand = ({open, setOpen}: Props) => { // Es como un modal de una sola linea que da elegir entre varias opciones
   return (
-    <CommandDialog 
+    <CommandResponsiveDialog 
       open={open} 
       onOpenChange={setOpen}
     >
@@ -23,7 +23,7 @@ export  const DashboardCommand = ({open, setOpen}: Props) => { // Es como un mod
           Test
         </CommandItem>
       </CommandList>
-    </CommandDialog>
+    </CommandResponsiveDialog>
   )
 }
 
