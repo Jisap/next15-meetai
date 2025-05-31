@@ -20,7 +20,13 @@ export  const DashboardCommand = ({open, setOpen}: Props) => { // Es como un mod
 
       <CommandList>
         <CommandItem>
-          Test
+          Test 1
+        </CommandItem>
+        <CommandItem>
+          Test 2
+        </CommandItem>
+        <CommandItem>
+          Test 3
         </CommandItem>
       </CommandList>
     </CommandResponsiveDialog>
