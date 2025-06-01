@@ -3,7 +3,7 @@ import { agents } from '../../../db/schema';
 import { db } from "@/db";
 import { agentsInsertSchema } from "../schemas";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { eq, getTableColumns, sql } from "drizzle-orm";
 
 
 
@@ -13,7 +13,11 @@ export const agentsRouter = createTRPCRouter({
     .input( z.object({ id: z.string() }))
     .query(async({ input }) => {
       const [existingAgent] = await db
-      .select()
+      .select({
+        // TODO: Change to actual count
+        meetingCount: sql<number>`5`,   // Se agrega una columna de tipo number llamada meetingCount
+        ...getTableColumns(agents),     // Se seleccionan todas las columnas de la tabla agents
+      })
       .from(agents)
       .where(
         eq(agents.id, input.id)
@@ -24,7 +28,11 @@ export const agentsRouter = createTRPCRouter({
 
   getMany: protectedProcedure.query(async() => {
     const data = await db
-      .select()
+      .select({
+        // TODO: Change to actual count
+        meetingCount: sql<number>`5`,   // Se agrega una columna de tipo number llamada meetingCount
+        ...getTableColumns(agents),     // Se seleccionan todas las columnas de la tabla agents
+      })
       .from(agents)
   
       return data;
