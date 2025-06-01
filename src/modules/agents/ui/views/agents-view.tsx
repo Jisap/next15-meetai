@@ -4,8 +4,17 @@ import { ErrorState } from "@/components/error-state"
 import { LoadingState } from "@/components/loading-state"
 import { useTRPC } from "@/trpc/client"
 import { useSuspenseQuery } from "@tanstack/react-query"
+import { DataTable } from "../components/data-table"
+import { columns, Payment } from "../components/columns"
 
-
+const mockData: Payment[] = [
+  {
+    id: "728ed52f",
+    amount: 100,
+    status: "pending",
+    email: "m@example.com",
+  },
+]
 
 export const AgentsView = () => {
 
@@ -21,7 +30,7 @@ export const AgentsView = () => {
 
   return (
     <div>
-      {JSON.stringify(data, null, 2)}
+      <DataTable data={mockData} columns={columns} />
     </div>
   )
 }
