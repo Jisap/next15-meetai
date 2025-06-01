@@ -1,4 +1,6 @@
-import { initTRPC } from '@trpc/server';
+import { auth } from '@/lib/auth';
+import { initTRPC, TRPCError } from '@trpc/server';
+import { headers } from 'next/headers';
 import { cache } from 'react';
 
 /**
@@ -26,3 +28,19 @@ export const createCallerFactory = t.createCallerFactory;
 
 /** Procedimiento base público. Úsalo para construir tus queries, mutations y subscriptions. Es un alias para `t.procedure`. */
 export const baseProcedure = t.procedure;
+
+/** Procedimiento protegido. Extiende de baseProcedure e incluye la session del usuario */
+export const protectedProcedure = baseProcedure.use(async ({ ctx, next }) => {
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
+
+  if (!session) {
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
+  }
+
+  return next({ ctx: { ...ctx, auth: session } });
+});
+
+
+
