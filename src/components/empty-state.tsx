@@ -10,13 +10,13 @@ interface Props {
 
 export const EmptyState = ({ title, description }: Props) => {
   return (
-    <div className="flex lfex-col items-center justify-center">
+    <div className="flex flex-col items-center justify-center">
         <Image 
-          src="/logo.svg"
+          src="/empty.svg"
           alt="Empty"
           width={240}
           height={240}
-          className="size-6 text-red-500" 
+          
         />
         <div className="flex flex-col gap-y-6 max-w-md mx-auto text-center">
           <h6 className="text-lg font-medium">{title}</h6>
