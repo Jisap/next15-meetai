@@ -7,12 +7,15 @@ import { useSuspenseQuery } from "@tanstack/react-query"
 import { DataTable } from "../components/data-table"
 import { columns } from "../components/columns"
 import { EmptyState } from "@/components/empty-state"
+import { useAgentsFilter } from "../../hooks/use-agents-filter"
 
 
 export const AgentsView = () => {
 
+  const[filters] = useAgentsFilter(); // Estado de filters desde la url
+
   const trpc = useTRPC();
-  const baseQueryOptions = trpc.agents.getMany.queryOptions({});          // Se obtienen las queryOptions originales para mantener cualquier configuración base (como queryKey y queryFn)
+  const baseQueryOptions = trpc.agents.getMany.queryOptions({...filters}); // Se obtienen las queryOptions originales para mantener cualquier configuración base (como queryKey y queryFn)
   
   //const{ data } = useSuspenseQuery(trpc.agents.getMany.queryOptions()); // Código original
   

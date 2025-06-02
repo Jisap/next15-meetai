@@ -5,7 +5,7 @@ import { useAgentsFilter } from "../../hooks/use-agents-filter";
 
 
 export const AgentsSearchFilter = () => {
-  const [filters, setFilters] = useAgentsFilter(); // 
+  const [filters, setFilters] = useAgentsFilter(); // Establece el estado de filters desde la url
 
   return(
     <div className="relative">
