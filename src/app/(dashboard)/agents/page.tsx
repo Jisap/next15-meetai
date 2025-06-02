@@ -19,8 +19,8 @@ const Page = async() => {
     redirect('/sign-in')
   }
   
-  const queryClient = getQueryClient();                               // Instancia de QueryClient
-  void queryClient.prefetchQuery(trpc.agents.getMany.queryOptions()); // Carga de datos en la cache de QueryClient 
+  const queryClient = getQueryClient();                                 // Instancia de QueryClient
+  void queryClient.prefetchQuery(trpc.agents.getMany.queryOptions({})); // Carga de datos en la cache de QueryClient 
 
   
   return (
