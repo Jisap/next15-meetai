@@ -1,4 +1,4 @@
-import { LoadingState } from "@/components/loading-state";
+
 import { auth } from "@/lib/auth";
 import { loadSearchParams } from "@/modules/agents/params";
 import { AgentListHeader } from "@/modules/agents/ui/components/agent-list-header";
@@ -13,15 +13,16 @@ import { ErrorBoundary } from "react-error-boundary";
 
 
 interface Props {
-  searchParams: Promise<SearchParams>
+  searchParams: Promise<SearchParams>                  // Parámetros de la url
 }
 
 const Page = async({ searchParams }: Props) => {
 
-  const filters = await loadSearchParams(searchParams) // Obtiene los parámetros de la url establecido por nuqs
+  const resolvedSearchParams = await searchParams;     // Se resuelven los parámetros de la url
+  const filters = loadSearchParams(resolvedSearchParams) // Parsea y valida los parámetros de la URL usando la configuración definida en `loadSearchParams` con nuqs
 
-  const session = await auth.api.getSession({ // Cuando se hace login, se guarda la sesión en la cookie
-    headers: await headers()                  // Los headers acceden a la cookie y con ella se obtiene la sesión
+  const session = await auth.api.getSession({          // Cuando se hace login, se guarda la sesión en la cookie
+    headers: await headers()                           // Los headers acceden a la cookie y con ella se obtiene la sesión
   })
 
   if (!session) {

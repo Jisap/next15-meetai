@@ -3,11 +3,25 @@ import { createLoader, parseAsInteger, parseAsString } from "nuqs/server"
 
 
 
-// Esto es un objeto de configuración que define cómo se deben tratar ciertos parámetros de la URL
+/**
+ * Define la estructura y los valores por defecto para los parámetros de búsqueda (filtros)
+ * que se esperan en la URL. Esta configuración es utilizada por `nuqs/server` para
+ * parsear los parámetros del lado del servidor.
+ * - `search`: Parámetro para el texto de búsqueda, por defecto es una cadena vacía.
+ * - `page`: Parámetro para la paginación, por defecto es `DEFAULT_PAGE`.
+ * `withOptions({ clearOnDefault: true })` ayuda a mantener las URLs limpias al no incluir
+ * parámetros si su valor es el predeterminado (relevante para la actualización de URL desde el cliente).
+ */
 export const filtersSearchParams = {
   search: parseAsString.withDefault("").withOptions({ clearOnDefault: true }),
   page: parseAsInteger.withDefault(DEFAULT_PAGE).withOptions({ clearOnDefault: true }),
 }
 
-// Extrae y valida los parámetros de la URL
+/**
+ * Crea una función (`loadSearchParams`) para cargar y parsear los parámetros de la URL
+ * del lado del servidor, utilizando la configuración definida en `filtersSearchParams`.
+ * Esta función se usa típicamente en Server Components de Next.js para obtener los filtros
+ * iniciales de la URL y pasarlos al pre-cargado de datos (ej. con TanStack Query).
+ * Es la contraparte en el servidor de `useAgentsFilter` (que usa `useQueryStates` de `nuqs` en el cliente).
+ */
 export const loadSearchParams = createLoader(filtersSearchParams)
