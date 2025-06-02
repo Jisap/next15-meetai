@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { agentsInsertSchema } from "../schemas";
 import { z } from "zod";
 import { eq, getTableColumns, sql } from "drizzle-orm";
+import page from "@/app/(dashboard)/meetings/page";
 
 
 
@@ -26,16 +27,24 @@ export const agentsRouter = createTRPCRouter({
       return existingAgent;
   }),
 
-  getMany: protectedProcedure.query(async() => {
-    const data = await db
-      .select({
-        // TODO: Change to actual count
-        meetingCount: sql<number>`5`,   // Se agrega una columna de tipo number llamada meetingCount
-        ...getTableColumns(agents),     // Se seleccionan todas las columnas de la tabla agents
-      })
-      .from(agents)
+  getMany: protectedProcedure
+    .input( 
+      z.object({
+        page: z.number().min(1).default(1),
+        pageSize: z.number().min(1).max(100).default(10),
+        search: z.string().nullish(),
+      }).optional()
+    )
+    .query(async() => {
+      const data = await db
+        .select({
+          // TODO: Change to actual count
+          meetingCount: sql<number>`5`,   // Se agrega una columna de tipo number llamada meetingCount
+          ...getTableColumns(agents),     // Se seleccionan todas las columnas de la tabla agents
+        })
+        .from(agents)
   
-      return data;
+        return data;
   }),
   create: protectedProcedure
     .input(agentsInsertSchema)
