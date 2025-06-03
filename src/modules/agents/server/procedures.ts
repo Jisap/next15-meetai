@@ -6,6 +6,7 @@ import { z } from "zod";
 import { and, count, desc, eq, getTableColumns, ilike, sql } from "drizzle-orm";
 import page from "@/app/(dashboard)/meetings/page";
 import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, MIN_PAGE_SIZE } from "@/constants";
+import { TRPCError } from "@trpc/server";
 
 
 
@@ -13,18 +14,26 @@ export const agentsRouter = createTRPCRouter({
  
   getOne: protectedProcedure
     .input( z.object({ id: z.string() }))
-    .query(async({ input }) => {
+    .query(async({ input, ctx }) => {
       const [existingAgent] = await db
       .select({
         // TODO: Change to actual count
-        meetingCount: sql<number>`5`,   // Se agrega una columna de tipo number llamada meetingCount
-        ...getTableColumns(agents),     // Se seleccionan todas las columnas de la tabla agents
+        meetingCount: sql<number>`5`,            // Se agrega una columna de tipo number llamada meetingCount
+        ...getTableColumns(agents),              // Se seleccionan todas las columnas de la tabla agents
       })
       .from(agents)
       .where(
-        eq(agents.id, input.id)
+        and(
+          eq(agents.id, input.id),               // Filtra los agentes que coincidan con el id especificado
+          eq(agents.userId, ctx.auth.user.id)    // Filtra los agentes que pertenecen al usuario autenticado
+          
+        )
       )
-       
+
+      if(!existingAgent) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Agent not found" })
+      }
+
       return existingAgent;
   }),
 
