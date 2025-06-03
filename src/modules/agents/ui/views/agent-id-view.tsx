@@ -2,13 +2,15 @@
 
 import { useTRPC } from '@/trpc/client';
 import { trpc } from '../../../../trpc/server';
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { LoadingState } from '@/components/loading-state';
 import { ErrorState } from '@/components/error-state';
 import { AgentIdViewHeader } from '../components/agent-id-view-header';
 import { GeneratedAvatar } from '@/components/generated-avatar';
 import { Badge } from '@/components/ui/badge';
 import { VideoIcon } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 
 interface Props {
@@ -19,6 +21,8 @@ interface Props {
 export const AgentIdView = ({ agentId }: Props) => {
 
   const trpc = useTRPC();
+  const router = useRouter();
+  const queryClient = useQueryClient();
 
   // const { data } = useSuspenseQuery(trpc.agents.getOne.queryOptions({ id: agentId }));
 
@@ -28,13 +32,27 @@ export const AgentIdView = ({ agentId }: Props) => {
     retry: 3,
   });
 
+  const removeAgent = useMutation(
+    trpc.agents.remove.mutationOptions({
+      onSuccess: async() => {
+        await queryClient.invalidateQueries(trpc.agents.getMany.queryOptions({}));
+        // TODO: invalidate free tier usage
+        router.push('/agents');
+      },
+      onError: (error) => {
+        console.error(error);
+        toast.error(error.message);
+      }
+    })
+  )
+
   return (
     <div className='flex-1 py-4 md:px-8 flex flex-col gap-y-4'>
       <AgentIdViewHeader
         agentId={agentId}
         agentName={data.name}
         onEdit={() => { }}
-        onRemove={() => { }}
+        onRemove={() => removeAgent.mutate({ id: agentId })}
       />
 
       <div className='bg-white rounded-lg border'>
