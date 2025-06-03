@@ -40,7 +40,7 @@ export function DataTable<TData, TValue>({
             table.getRowModel().rows.map((row) => (
               <TableRow
                 key={row.id}
-                onClick={() => onRowClick?.(row.original)} // Si existe onRowClick, se ejecuta con el dato seleccionado en su interior
+                onClick={() => onRowClick?.(row.original)} // Si existe onRowClick, se ejecuta con el dato seleccionado en su interior -> redirect to agentId page
                 data-state={row.getIsSelected() && "selected"}
                 className="cursor-pointer"
               >
