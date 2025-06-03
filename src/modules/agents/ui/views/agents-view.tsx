@@ -8,11 +8,12 @@ import { DataTable } from "../components/data-table"
 import { columns } from "../components/columns"
 import { EmptyState } from "@/components/empty-state"
 import { useAgentsFilter } from "../../hooks/use-agents-filter"
+import { DataPagination } from "../components/data-pagination"
 
 
 export const AgentsView = () => {
 
-  const[filters] = useAgentsFilter(); // Estado de filters desde la url
+  const[filters, setFilters] = useAgentsFilter(); // Estado de filters desde la url
 
   const trpc = useTRPC();
   const baseQueryOptions = trpc.agents.getMany.queryOptions({...filters}); // Se obtienen las queryOptions originales para mantener cualquier configuración base (como queryKey y queryFn)
@@ -29,6 +30,12 @@ export const AgentsView = () => {
       <DataTable 
         data={data.items} 
         columns={columns} 
+      />
+
+      <DataPagination 
+        page={filters.page}
+        totalPages={data.totalPages}
+        onPageChange={(page) => setFilters({ page })}
       />
       
       {data.items.length === 0 && (
