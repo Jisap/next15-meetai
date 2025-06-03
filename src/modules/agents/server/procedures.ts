@@ -1,7 +1,7 @@
 import { baseProcedure, createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { agents } from '../../../db/schema';
 import { db } from "@/db";
-import { agentsInsertSchema } from "../schemas";
+import { agentsInsertSchema, agentsUpdateSchema } from "../schemas";
 import { z } from "zod";
 import { and, count, desc, eq, getTableColumns, ilike, sql } from "drizzle-orm";
 import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, MIN_PAGE_SIZE } from "@/constants";
@@ -10,50 +10,71 @@ import { TRPCError } from "@trpc/server";
 
 
 export const agentsRouter = createTRPCRouter({
- 
-  remove: protectedProcedure
-    .input( z.object({ id: z.string() }))
-    .mutation(async({ input, ctx }) => {
-      const [removedAgent] = await db
-      .delete(agents)
-      .where(
-        and(
-          eq(agents.id, input.id),
-          eq(agents.userId, ctx.auth.user.id)
+
+  update: protectedProcedure
+    .input(agentsUpdateSchema)
+    .mutation(async ({ input, ctx }) => {
+      const [updatedAgent] = await db
+        .update(agents)
+        .set(input)
+        .where(
+          and(
+            eq(agents.id, input.id),
+            eq(agents.userId, ctx.auth.user.id)
+          )
         )
-      )
-      .returning()
-      
-      if(!!removedAgent){
+        .returning();
+
+      if (!updatedAgent) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Agent not found" })
+      }
+
+      return updatedAgent;
+    }),
+
+  remove: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const [removedAgent] = await db
+        .delete(agents)
+        .where(
+          and(
+            eq(agents.id, input.id),
+            eq(agents.userId, ctx.auth.user.id)
+          )
+        )
+        .returning()
+
+      if (!!removedAgent) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Agent not found" })
       }
 
       return removedAgent;
-  }),
+    }),
   getOne: protectedProcedure
-    .input( z.object({ id: z.string() }))
-    .query(async({ input, ctx }) => {
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input, ctx }) => {
       const [existingAgent] = await db
-      .select({
-        // TODO: Change to actual count
-        meetingCount: sql<number>`5`,            // Se agrega una columna de tipo number llamada meetingCount
-        ...getTableColumns(agents),              // Se seleccionan todas las columnas de la tabla agents
-      })
-      .from(agents)
-      .where(
-        and(
-          eq(agents.id, input.id),               // Filtra los agentes que coincidan con el id especificado
-          eq(agents.userId, ctx.auth.user.id)    // Filtra los agentes que pertenecen al usuario autenticado
-          
-        )
-      )
+        .select({
+          // TODO: Change to actual count
+          meetingCount: sql<number>`5`,            // Se agrega una columna de tipo number llamada meetingCount
+          ...getTableColumns(agents),              // Se seleccionan todas las columnas de la tabla agents
+        })
+        .from(agents)
+        .where(
+          and(
+            eq(agents.id, input.id),               // Filtra los agentes que coincidan con el id especificado
+            eq(agents.userId, ctx.auth.user.id)    // Filtra los agentes que pertenecen al usuario autenticado
 
-      if(!existingAgent) {
+          )
+        )
+
+      if (!existingAgent) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Agent not found" })
       }
 
       return existingAgent;
-  }),
+    }),
 
   getMany: protectedProcedure
     .input(                                                             // Filters
@@ -67,7 +88,7 @@ export const agentsRouter = createTRPCRouter({
         search: z.string().nullish(),                                   // Se espera un termino de búsqueda
       })
     )
-    .query(async({ ctx, input}) => {                                    // Consulta recibiendo los filtros y el ctx con el usuario autenticado
+    .query(async ({ ctx, input }) => {                                    // Consulta recibiendo los filtros y el ctx con el usuario autenticado
       const { search, page, pageSize } = input;
       const data = await db                                             // Se obtienen los datos de la tabla agents
         .select({                                                       // Para ello se seleccionan las columnas de la tabla agents
@@ -97,16 +118,16 @@ export const agentsRouter = createTRPCRouter({
         )
 
       const totalPages = Math.ceil(total.count / pageSize);             // Calcula el número total de páginas necesarias para mostrar todos los elementos, dividiendo el conteo total por el tamaño de página y redondeando hacia arriba  
-  
-        return {
-          items: data,
-          total: total.count,
-          totalPages,
-        }
-  }),
+
+      return {
+        items: data,
+        total: total.count,
+        totalPages,
+      }
+    }),
   create: protectedProcedure
     .input(agentsInsertSchema)
-    .mutation(async({ input, ctx }) => {
+    .mutation(async ({ input, ctx }) => {
       const [createdAgent] = await db // Drizzle siempre devuelve un array
         .insert(agents)
         .values({
