@@ -1,8 +1,10 @@
-import React from 'react'
+
 
 const Page = () => {
   return (
-    <div>meetings</div>
+    <div>
+      Meeting ID Page
+    </div>
   )
 }
 
