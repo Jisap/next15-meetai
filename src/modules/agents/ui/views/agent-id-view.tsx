@@ -77,8 +77,8 @@ export const AgentIdView = ({ agentId }: Props) => {
         <AgentIdViewHeader
           agentId={agentId}
           agentName={data.name}
-          onEdit={() => setUpdateAgentDialogOpen(true)} // Se abre el dialogo de edición <updateAgentDialog>
-          onRemove={handleRemoveAgent}                  // Se abre el dialogo de confirmación <RemovedConfirmation>
+          onEdit={() => setUpdateAgentDialogOpen(true)} // Se abre el dialogo de edición <updateAgentDialog> -> <AgentFomr>
+          onRemove={handleRemoveAgent}                  // Se abre el dialogo de confirmación <RemovedConfirmation> -> <useConfirm>
         />
 
         <div className='bg-white rounded-lg border'>

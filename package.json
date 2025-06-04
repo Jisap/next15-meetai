@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:generate": "drizzle-kit generate --dialect=postgresql --schema=./src/db/schema.ts",
+    "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
     "@dicebear/collection": "^9.2.2",
