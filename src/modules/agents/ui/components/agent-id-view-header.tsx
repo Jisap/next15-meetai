@@ -67,10 +67,12 @@ export const AgentIdViewHeader = ({ agentId, agentName, onEdit, onRemove }: Prop
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end">
+          {/* Al hacer click en el botón de editar, se abre el updateAgentDialog */}
           <DropdownMenuItem onClick={onEdit}>
             <PencilIcon className="size-4 text-black" />
             Edit
           </DropdownMenuItem>
+          {/* Al hacer click en el botón de eliminar, se abre el dialogo de confirmación */}
           <DropdownMenuItem onClick={onRemove}>
             <TrashIcon className="size-4 text-black" />
             Delete

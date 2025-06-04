@@ -39,18 +39,14 @@ export const AgentForm = ({ onSuccess, onCancel, initialValues }: AgentFormProps
   //const router = useRouter();
   const queryClient = useQueryClient();
 
-  // Mutation
+  // Mutation createAgent
   const createAgent = useMutation(trpc.agents.create.mutationOptions({ // useMutation para crear un agente
     onSuccess: async() => {
       await queryClient.invalidateQueries(
         trpc.agents.getMany.queryOptions({})
       ); // Se invalida la consulta de agentes si se crea un nuevo agente
     
-      if(initialValues?.id){
-        await queryClient.invalidateQueries(
-          trpc.agents.getOne.queryOptions({ id: initialValues.id })
-        ); // Se invalida la consulta de un agente específico si es que está siendo editado
-      }
+      //TODO: Invalidate free tier usage
       onSuccess?.(); // Cierra el dialogo
     },
     onError: (error) => {
@@ -58,6 +54,27 @@ export const AgentForm = ({ onSuccess, onCancel, initialValues }: AgentFormProps
       //TODO: Chek if error code is "FORBIDDEN" and redirect to /upgrade
     },
     })
+  );
+
+  // Mutation updateAgent
+  const updateAgent = useMutation(trpc.agents.update.mutationOptions({ // useMutation para editar un agente
+    onSuccess: async () => {
+      await queryClient.invalidateQueries(
+        trpc.agents.getMany.queryOptions({})
+      ); // Se invalida la consulta de agentes si se edita un agente
+
+      if (initialValues?.id) {
+        await queryClient.invalidateQueries(
+          trpc.agents.getOne.queryOptions({ id: initialValues.id })
+        ); // Se invalida la consulta de un agente específico al ser editado
+      }
+      onSuccess?.(); // Cierra el dialogo
+    },
+    onError: (error) => {
+      toast.error(error.message);
+      //TODO: Chek if error code is "FORBIDDEN" and redirect to /upgrade
+    },
+  })
   );
 
   // Form
@@ -70,12 +87,13 @@ export const AgentForm = ({ onSuccess, onCancel, initialValues }: AgentFormProps
   });
 
   const isEdit = !!initialValues?.id;
-  const isPending = createAgent.isPending;
+  const isPending = createAgent.isPending || updateAgent.isPending;
+
 
   // onSubmit -> envia los datos al backend (mutation)
   const onSubmit = (values: z.infer<typeof agentsInsertSchema>) => {  // Recibe los datos del formulario y los envía al backend (mutation)
     if(isEdit){
-      console.log("TODO: Edit Agent");
+      updateAgent.mutate({ ...values, id: initialValues?.id });
     }else{
       createAgent.mutate(values);
     }
