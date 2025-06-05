@@ -1,5 +1,8 @@
-import { ResponsiveDialog } from "@/components/responsive-dialog";
 
+
+import { ResponsiveDialog } from "@/components/responsive-dialog";
+import { MeetingForm } from "./meeting-form";
+import { useRouter } from "next/navigation";
 
 
 
@@ -9,6 +12,9 @@ interface NewMeetingDialogProps {
 }
 
 export const NewMeetingDialog = ({ open, onOpenChange }: NewMeetingDialogProps) => {
+
+  const router = useRouter();
+
   return (
     <ResponsiveDialog 
       open={open} 
@@ -16,7 +22,13 @@ export const NewMeetingDialog = ({ open, onOpenChange }: NewMeetingDialogProps) 
       title="New Meeting"
       description="Create a new meeting"
     >
-      TODO: Meeting Form
+      <MeetingForm 
+        onSuccess={(id) => {
+          onOpenChange(false)
+          router.push(`/meetings/${id}`)
+        }} 
+        onCancel={() => onOpenChange(false)}
+      />
     </ResponsiveDialog>
   )
 }

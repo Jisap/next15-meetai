@@ -8,7 +8,8 @@ import { useState } from 'react'
 
 export const MeetingsListHeader = () => {
 
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  // Al pulsar el botón de new meeting -> <NewMeetingDialog /> -> <ResponsiveDialog /> -> <MeetingForm />
+  const [isDialogOpen, setIsDialogOpen] = useState(false); 
   
   return (
     <>

@@ -17,8 +17,8 @@ export const MeetingsView = () => {
 
 
   return (
-    <div>
-      TODO: Data Table here
+    <div className='overflow-x-scroll'>
+      {JSON.stringify(data, null, 2)}
     </div>
   )
 }
