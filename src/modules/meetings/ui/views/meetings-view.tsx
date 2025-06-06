@@ -6,6 +6,7 @@ import { LoadingState } from '@/components/loading-state';
 import { useTRPC } from '@/trpc/client';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { columns } from '../components/columns';
+import { EmptyState } from '@/components/empty-state';
 
 
 export const MeetingsView = () => {
@@ -24,6 +25,12 @@ export const MeetingsView = () => {
         data={data.items}
         columns={columns}  
       />
+
+      {data.items.length === 0 && (
+        <EmptyState
+          title="Create your first meeting"
+          description="Create an agent to join your meetings. Each agent will follow your instructions and can interact with participants during the call" />
+      )}
     </div>
   )
 }
