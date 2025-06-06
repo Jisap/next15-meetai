@@ -43,10 +43,10 @@ export const MeetingForm = ({ onSuccess, onCancel, initialValues }: MeetingFormP
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  const [openNewAgentDialog, setOpenNewAgentDialog] = useState(false); // Abre el dialogo para crear un nuevo agente
-  const [agentSearch, setAgentSearch] = useState("");                  // Término de búsqueda de agentes
+  const [openNewAgentDialog, setOpenNewAgentDialog] = useState(false);     // Abre el dialogo para crear un nuevo agente
+  const [agentSearch, setAgentSearch] = useState("");                      // Término de búsqueda de agentes
 
-  const agents = useQuery(trpc.agents.getMany.queryOptions({           // Obtenemos los agentes para el select 
+  const agents = useQuery(trpc.agents.getMany.queryOptions({               // Obtenemos los agentes para el select 
     pageSize:100,
     search: agentSearch,
   }))

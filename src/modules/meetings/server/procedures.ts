@@ -1,5 +1,5 @@
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
-import { meetings } from '../../../db/schema';
+import { agents, meetings } from '../../../db/schema';
 import { db } from "@/db";
 import { z } from "zod";
 import { and, count, desc, eq, getTableColumns, ilike, sql } from "drizzle-orm";
@@ -87,11 +87,14 @@ export const meetingsRouter = createTRPCRouter({
       const { search, page, pageSize } = input;
       const data = await db                                             // Se obtienen los datos de la tabla meetings
         .select({                                                       // Para ello se seleccionan las columnas de la tabla meetings
-          // TODO: Change to actual count
+          //TODO: Change meetingCount with dynamic count
           meetingCount: sql<number>`5`,                                 // Se agrega una columna de tipo number llamada meetingCount
           ...getTableColumns(meetings),                                 // Se seleccionan todas las columnas de la tabla meetings
+          agent: agents,                                                // Se seleccionan todos los campos de la tabla agents relacionados con el meeting -> innerJoin
+          duration: sql<number>`EXTRACT(EPOCH FROM (ended_at - started_At))`.as("duration"), // Se agrega una columna de tipo number llamada duration que extrae el tiempo de duración de la reunión
         })
         .from(meetings)
+        .innerJoin(agents, eq(meetings.agentId, agents.id))             // Una reunión se vinculará con un agente si el agentId en la tabla meetings es igual al id en la tabla agents. -> Como resultado, solo se devolverán las reuniones que tengan un agente asociado válido en la tabla agents
         .where(
           and(
             eq(meetings.userId, ctx.auth.user.id),                      // Filtra los "meetings" para que solo se devuelvan aquellos cuyo userId coincida con el ID del usuario autenticado
@@ -105,6 +108,7 @@ export const meetingsRouter = createTRPCRouter({
       const [total] = await db                                          // Segunda Consulta a la Base de Datos (Obtener Total de Elementos)                                  
         .select({ count: count() })                                     // count() cuenta el número de filas que coinciden con la clausula where
         .from(meetings)
+        .innerJoin(agents, eq(meetings.agentId, agents.id))             // Se une la tabla meetings con la tabla agents usando el campo agentId de la tabla meetings
         .where(
           and(
             eq(meetings.userId, ctx.auth.user.id),                      // Meetings que pertenecen al usuario autenticado

@@ -10,7 +10,7 @@ export const MeetingsView = () => {
 
   const trpc = useTRPC();
   const baseQueryOptions = trpc.meetings.getMany.queryOptions({});
-  const { data } = useSuspenseQuery({                                             // useSuspenseQuery lanza una promesa (recibir datos) y suspende el renderizado hasta que la promesa se resuelva
+  const { data } = useSuspenseQuery({                                     // useSuspenseQuery lanza una promesa (recibir datos) y suspende el renderizado hasta que la promesa se resuelva
     ...baseQueryOptions,                                                  // Incluye queryKey, queryFn, etc. desde la configuración de tRPC
     retry: 3,                                                             // Reintentará la consulta hasta 3 veces en caso de error -> evitamos el loop infinito por issue de tanstack #8677
   });
