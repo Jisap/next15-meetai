@@ -1,16 +1,34 @@
 "use client"
 
 import { Button } from '@/components/ui/button'
-import { PlusIcon } from 'lucide-react'
+import { PlusIcon, XCircleIcon } from 'lucide-react'
 import { NewMeetingDialog } from './new-meeting-dialog'
 import { useState } from 'react'
+import { MeetingsSearchFilter } from './meeting-search-filter'
+import { StatusFilter } from './status-filter'
+import { AgentIdFilter } from './agent-id-filter'
+import { useMeetingsFilter } from '../../hooks/use-meetings-filter'
 
 
 export const MeetingsListHeader = () => {
 
+  const [filters, setFilters] = useMeetingsFilter();
+
   // Al pulsar el botón de new meeting -> <NewMeetingDialog /> -> <ResponsiveDialog /> -> <MeetingForm />
   const [isDialogOpen, setIsDialogOpen] = useState(false); 
   
+  const isAnyFilterModified = 
+    !!filters.status || !!filters.agentId || !!filters.search; // Si existe algún filtro en la url significa que isAnyFilterModified es true
+
+  const onClearFilters = () => {
+    setFilters({
+      status: null,
+      agentId: "",
+      search: "",
+      page: 1,
+    })
+  }
+
   return (
     <>
       <NewMeetingDialog 
@@ -27,7 +45,15 @@ export const MeetingsListHeader = () => {
         </div>
 
         <div className='flex items-center gap-x-2 p-1'>
-          TODO: Filters
+          <MeetingsSearchFilter />
+          <StatusFilter />
+          <AgentIdFilter />
+          {isAnyFilterModified && (
+            <Button onClick={onClearFilters} variant="outline">
+              <XCircleIcon className="size-4" />
+              Clear
+            </Button>
+          )}
         </div>
       </div>
     </>

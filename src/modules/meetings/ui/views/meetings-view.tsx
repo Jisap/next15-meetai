@@ -7,12 +7,17 @@ import { useTRPC } from '@/trpc/client';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { columns } from '../components/columns';
 import { EmptyState } from '@/components/empty-state';
+import { useRouter } from 'next/navigation';
+import { useMeetingsFilter } from '../../hooks/use-meetings-filter';
 
 
 export const MeetingsView = () => {
 
+  const router = useRouter();
+  const [filters, setFilters] = useMeetingsFilter();
+
   const trpc = useTRPC();
-  const baseQueryOptions = trpc.meetings.getMany.queryOptions({});
+  const baseQueryOptions = trpc.meetings.getMany.queryOptions({...filters});
   const { data } = useSuspenseQuery({                                     // useSuspenseQuery lanza una promesa (recibir datos) y suspende el renderizado hasta que la promesa se resuelva
     ...baseQueryOptions,                                                  // Incluye queryKey, queryFn, etc. desde la configuración de tRPC
     retry: 3,                                                             // Reintentará la consulta hasta 3 veces en caso de error -> evitamos el loop infinito por issue de tanstack #8677

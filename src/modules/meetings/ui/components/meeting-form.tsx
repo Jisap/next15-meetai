@@ -158,7 +158,7 @@ export const MeetingForm = ({ onSuccess, onCancel, initialValues }: MeetingFormP
                         </div>
                       )
                     }))}
-                    onSelect={field.onChange} // Cuando el usuario selecciona una agente se llama a field.onChange Esta es una función proporcionada por react-hook-form (a través del render prop de FormField) que actualiza el valor del campo agentId en el estado del formulario.
+                    onSelect={field.onChange} // Cuando el usuario selecciona un meeting se llama a field.onChange Esta es una función proporcionada por react-hook-form (a través del render prop de FormField) que actualiza el valor del campo agentId en el estado del formulario.
                     onSearch={setAgentSearch} // Cuando el usuario escribe en el input de búsqueda se llama a setAgentSearch -> provocando que la consulta agents se vuelva a ejecutar con el nuevo filtro.
                     value={field.value}       // El valor actual del campo agentId
                     placeholder="Select an agent"
