@@ -50,10 +50,15 @@ export const CommandSelect = ({
   const[open, setOpen] = useState(false);
   const selectedOption = options.find(option => option.value === value);
 
+  const handleOpenChange = (open: boolean) => { // Actualiza open cuando se cambia el estado del dialogo -> cuando se selecciona una opción o se pulsa esc o se cierra el dialogo
+    onSearch?.("")                              
+    setOpen(open);
+  }
+
   return (
     <>
       <Button
-        onClick={() => setOpen(true)}
+        onClick={() => setOpen(true)} // Cuando se pulsa sobre commandSelect se hace sobre este botón -> open = true -> CommandResponsiveDialog -> CommandInput + CommandList
         type="button"
         variant="outline"
         className={cn(
@@ -70,7 +75,7 @@ export const CommandSelect = ({
 
       <CommandResponsiveDialog
         open={open}
-        onOpenChange={setOpen}
+        onOpenChange={handleOpenChange}
         shouldFilter={!onSearch}
       >
         <CommandInput 
@@ -89,7 +94,8 @@ export const CommandSelect = ({
                 setOpen(false);
               }}
             >
-              {option.children}
+              {/* Avatar + text */}
+              {option.children} 
             </CommandItem>
           ))}
         </CommandList>

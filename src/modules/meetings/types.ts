@@ -6,3 +6,10 @@ import type { AppRouter } from "@/trpc/routers/_app";
 
 export type MeetingGetOne = inferRouterOutputs<AppRouter>["meetings"]["getOne"]; // Se infiere el tipo de la función getOne de Meetings
 export type MeetingGetMany = inferRouterOutputs<AppRouter>["meetings"]["getMany"]["items"]; // Se infiere el tipo de la función getMany de Meetings
+export enum MeetingStatus {
+  Upcoming = "upcoming",
+  Active = "active",
+  Completed = "completed",
+  Processing = "processing",
+  Cancelled = "cancelled",
+}

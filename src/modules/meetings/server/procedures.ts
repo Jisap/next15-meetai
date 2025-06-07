@@ -6,6 +6,7 @@ import { and, count, desc, eq, getTableColumns, ilike, sql } from "drizzle-orm";
 import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, MIN_PAGE_SIZE } from "@/constants";
 import { TRPCError } from "@trpc/server";
 import { meetingsInsertSchema, meetingsUpdateSchema } from "../schemas";
+import { MeetingStatus } from "../types";
 
 
 
@@ -81,10 +82,21 @@ export const meetingsRouter = createTRPCRouter({
           .max(MAX_PAGE_SIZE)
           .default(DEFAULT_PAGE_SIZE),
         search: z.string().nullish(),                                   // Se espera un termino de búsqueda
+        agentId: z.string().nullish(),                                  // Se espera un agentId
+        status: z
+          .enum([
+            MeetingStatus.Upcoming,
+            MeetingStatus.Active,
+            MeetingStatus.Completed,
+            MeetingStatus.Processing,
+            MeetingStatus.Cancelled
+          ])
+          .nullish(),
       })
     )
     .query(async ({ ctx, input }) => {                                  // Consulta recibiendo los filtros y el ctx con el usuario autenticado
-      const { search, page, pageSize } = input;
+      const { search, page, pageSize, status, agentId } = input;
+      
       const data = await db                                             // Se obtienen los datos de la tabla meetings
         .select({                                                       // Para ello se seleccionan las columnas de la tabla meetings
           //TODO: Change meetingCount with dynamic count
@@ -98,7 +110,9 @@ export const meetingsRouter = createTRPCRouter({
         .where(
           and(
             eq(meetings.userId, ctx.auth.user.id),                      // Filtra los "meetings" para que solo se devuelvan aquellos cuyo userId coincida con el ID del usuario autenticado
-            search ? ilike(meetings.name, `%${search}%`) : undefined    // Usamos el operador de comparación ilike para buscar por nombres de meetings que contienen la palabra de búsqueda
+            search ? ilike(meetings.name, `%${search}%`) : undefined,   // Usamos el operador de comparación ilike para buscar por nombres de meetings que contienen la palabra de búsqueda
+            status ? eq(meetings.status, status) : undefined,           // Filtra por status si se especifica
+            agentId ? eq(meetings.agentId, agentId) : undefined,        // Filtra por agentId si se especifica
           )
         )
         .orderBy(desc(meetings.createdAt), desc(meetings.id))           // Ordena los resultados de forma descendente
@@ -112,7 +126,9 @@ export const meetingsRouter = createTRPCRouter({
         .where(
           and(
             eq(meetings.userId, ctx.auth.user.id),                      // Meetings que pertenecen al usuario autenticado
-            search ? ilike(meetings.name, `%${search}%`) : undefined    // meetings cuyo name contiene la palabra de búsqueda
+            search ? ilike(meetings.name, `%${search}%`) : undefined,   // meetings cuyo name contiene la palabra de búsqueda
+            status ? eq(meetings.status, status) : undefined,           // Filtra por status si se especifica
+            agentId ? eq(meetings.agentId, agentId) : undefined,        // Filtra por agentId si se especifica
           )
         )
 
