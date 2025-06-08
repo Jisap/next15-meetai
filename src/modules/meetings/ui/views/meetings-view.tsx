@@ -52,7 +52,7 @@ export const MeetingsViewLoading = () => {
   return (
     <div className="flex flex-1 min-h-screen">
       <LoadingState
-        title="Loading Agent"
+        title="Loading Meeting"
         description="This may take a few seconds..."
       />
     </div>
@@ -63,7 +63,7 @@ export const MeetingsViewError = () => {
   return (
     <div className="flex flex-1 min-h-screen">
       <ErrorState
-        title="Error Loading Agents"
+        title="Error Loading Meeting"
         description="Something went wrong. Please try again later."
       />
     </div>
