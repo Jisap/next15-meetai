@@ -3,9 +3,12 @@
 import { ErrorState } from '@/components/error-state';
 import { LoadingState } from '@/components/loading-state';
 import { useTRPC } from '@/trpc/client';
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import React from 'react'
 import { MeetingIdViewHeader } from '../components/meeting-id-view-header';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { useConfirm } from '../../hooks/use-confirm';
 
 interface Props {
   meetingId: string
@@ -14,6 +17,14 @@ interface Props {
 
 export const MeetingIdView = ({ meetingId }: Props) => {
 
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
+  const [RemoveConfirmation, confirmRemove] = useConfirm(
+    "Are you sure?",
+    "The following action will remove this meeting"
+  );
+
   const trpc = useTRPC();
   const baseQueryOptions = trpc.meetings.getOne.queryOptions({ id: meetingId });
   const { data } = useSuspenseQuery({                                     // useSuspenseQuery lanza una promesa (recibir datos) y suspende el renderizado hasta que la promesa se resuelva
@@ -21,14 +32,35 @@ export const MeetingIdView = ({ meetingId }: Props) => {
     retry: 3,                                                             // Reintentará la consulta hasta 3 veces en caso de error -> evitamos el loop infinito por issue de tanstack #8677
   });
 
+  const removeMeeting = useMutation(
+    trpc.meetings.remove.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries(trpc.meetings.getMany.queryOptions({}));
+        router.push('/meetings');
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      }
+    })
+  );
+
+  const handleRemoveMeeting = async () => {            // Cuando se pulsa el botón de remover
+    const ok = await confirmRemove()                   // Se crea la promesa de confirmación -> se abre el dialogo
+
+    if(!ok) return                                     // Se se le da a cancel => promise=false y se cierra el dialogo
+
+    await removeMeeting.mutateAsync({ id: meetingId }) // Si se se le da a confirm => promise=true -> mutation y se cierra el dialogo
+  }
+
   return (
     <>
+      <RemoveConfirmation />
       <div className='flex-1 py-4 px-4 md:px-8 flex flex-col gap-y-4'>
         <MeetingIdViewHeader 
           meetingId={meetingId}
           meetingName={data.name} 
           onEdit={() => console.log('Edit Meeting')}
-          onRemove={() => console.log('Remove Meeting')}
+          onRemove={handleRemoveMeeting}
         />
         {JSON.stringify(data, null, 2)}
       </div>
