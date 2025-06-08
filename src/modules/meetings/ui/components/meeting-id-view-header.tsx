@@ -36,7 +36,7 @@ export const MeetingIdViewHeader = ({ meetingId, meetingName, onEdit, onRemove }
               asChild
               className="font-medium text-xl"
             >
-              <Link href="/agents">
+              <Link href="/meetings">
                 My Meetings
               </Link>
             </BreadcrumbLink>
