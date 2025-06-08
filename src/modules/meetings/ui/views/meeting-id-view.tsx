@@ -4,11 +4,12 @@ import { ErrorState } from '@/components/error-state';
 import { LoadingState } from '@/components/loading-state';
 import { useTRPC } from '@/trpc/client';
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
-import React from 'react'
+import React, { useState } from 'react'
 import { MeetingIdViewHeader } from '../components/meeting-id-view-header';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useConfirm } from '../../hooks/use-confirm';
+import { UpdateMeetingDialog } from '../components/update-meeting-dialog';
 
 interface Props {
   meetingId: string
@@ -19,6 +20,8 @@ export const MeetingIdView = ({ meetingId }: Props) => {
 
   const queryClient = useQueryClient();
   const router = useRouter();
+
+  const [updateMeetingDialogOpen, setUpdateMeetingDialogOpen] = useState(false);
 
   const [RemoveConfirmation, confirmRemove] = useConfirm(
     "Are you sure?",
@@ -55,11 +58,16 @@ export const MeetingIdView = ({ meetingId }: Props) => {
   return (
     <>
       <RemoveConfirmation />
+      <UpdateMeetingDialog 
+        open={updateMeetingDialogOpen} 
+        onOpenChange={setUpdateMeetingDialogOpen}
+        initialValues={data}
+      />
       <div className='flex-1 py-4 px-4 md:px-8 flex flex-col gap-y-4'>
         <MeetingIdViewHeader 
           meetingId={meetingId}
           meetingName={data.name} 
-          onEdit={() => console.log('Edit Meeting')}
+          onEdit={() => setUpdateMeetingDialogOpen(true)}
           onRemove={handleRemoveMeeting}
         />
         {JSON.stringify(data, null, 2)}
