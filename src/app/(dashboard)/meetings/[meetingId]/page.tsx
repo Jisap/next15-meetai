@@ -1,10 +1,43 @@
+import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { auth } from '@/lib/auth';
+import { getQueryClient, trpc } from '@/trpc/server';
+import { HydrationBoundary, dehydrate } from '@tanstack/react-query';
+import { Suspense } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
+import { MeetingIdView } from '@/modules/meetings/ui/views/meeting-id-view';
 
 
-const Page = () => {
+
+interface Props {
+  params: Promise<{ meetingId: string }>;
+}
+
+const Page = async({ params }: Props) => {
+
+  const { meetingId } = await params;
+
+  const session = await auth.api.getSession({            // Cuando se hace login, se guarda la sesión en la cookie
+    headers: await headers()                             // Los headers acceden a la cookie y con ella se obtiene la sesión
+  })
+
+  if (!session) {
+    redirect('/sign-in')
+  }
+
+  const queryClient = getQueryClient();
+  void queryClient.prefetchQuery(trpc.meetings.getOne.queryOptions({ id: meetingId }));
+  
+  //TODO: Prefetch `meetings.getTranscript`
+
   return (
-    <div>
-      Meeting ID Page
-    </div>
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <Suspense fallback={<div>Loading...</div>}>
+        <ErrorBoundary fallback={<div>Error</div>}>
+          <MeetingIdView meetingId={meetingId} />
+        </ErrorBoundary>
+      </Suspense>
+    </HydrationBoundary>
   )
 }
 
