@@ -54,13 +54,16 @@ export const meetingsRouter = createTRPCRouter({
     .query(async ({ input, ctx }) => {
       const [existingMeeting] = await db
         .select({
-          ...getTableColumns(meetings),              // Se seleccionan todas las columnas de la tabla meetings
+          ...getTableColumns(meetings),                               // Se seleccionan todas las columnas de la tabla meetings
+          agent: agents,                                              // Se seleccionan todos los campos de la tabla agents relacionados con el meeting -> innerJoin
+          duration: sql<number>`EXTRACT(EPOCH FROM (ended_at - started_At))`.as("duration"), // Se agrega una columna de tipo number llamada duration que extrae el tiempo de duración de la reunión
         })
         .from(meetings)
+        .innerJoin(agents, eq(meetings.agentId, agents.id))           // Una reunión se vinculará con un agente si el agentId en la tabla meetings es igual al id en la tabla agents. -> Como resultado, solo se devolverá la reunión que tenga un agente asociado válido en la tabla agents
         .where(
           and(
-            eq(meetings.id, input.id),               // Filtra los meetings que coincidan con el id especificado
-            eq(meetings.userId, ctx.auth.user.id)    // Filtra los meetings que pertenecen al usuario autenticado
+            eq(meetings.id, input.id),                                // Filtra los meetings que coincidan con el id especificado
+            eq(meetings.userId, ctx.auth.user.id)                     // Filtra los meetings que pertenecen al usuario autenticado
 
           )
         )
