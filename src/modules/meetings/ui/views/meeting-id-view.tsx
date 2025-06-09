@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useConfirm } from '../../hooks/use-confirm';
 import { UpdateMeetingDialog } from '../components/update-meeting-dialog';
+import { UpcommingState } from '../components/upcoming-state';
 
 interface Props {
   meetingId: string
@@ -53,7 +54,13 @@ export const MeetingIdView = ({ meetingId }: Props) => {
     if(!ok) return                                     // Se se le da a cancel => promise=false y se cierra el dialogo
 
     await removeMeeting.mutateAsync({ id: meetingId }) // Si se se le da a confirm => promise=true -> mutation y se cierra el dialogo
-  }
+  };
+
+  const isActive = data.status === "active";
+  const isUpcoming = data.status === "upcoming";
+  const isCancelled = data.status === "cancelled";
+  const isCompleted = data.status === "completed";
+  const isProcessing = data.status === "processing";
 
   return (
     <>
@@ -70,7 +77,17 @@ export const MeetingIdView = ({ meetingId }: Props) => {
           onEdit={() => setUpdateMeetingDialogOpen(true)}
           onRemove={handleRemoveMeeting}
         />
-        {JSON.stringify(data, null, 2)}
+        {isCancelled && <div>Cancelled</div>}
+        {isProcessing && <div>Processing</div>}
+        {isCompleted && <div>Completed</div>}
+        {isUpcoming && (
+          <UpcommingState 
+            meetingId={meetingId}
+            onCancelMeeting={() => {}}
+            isCancelling={false}
+          />
+        )}
+        
       </div>
     </>
   )
