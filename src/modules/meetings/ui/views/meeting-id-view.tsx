@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { useConfirm } from '../../hooks/use-confirm';
 import { UpdateMeetingDialog } from '../components/update-meeting-dialog';
 import { UpcommingState } from '../components/upcoming-state';
+import { ActiveState } from '../components/active-state';
 
 interface Props {
   meetingId: string
@@ -85,6 +86,12 @@ export const MeetingIdView = ({ meetingId }: Props) => {
             meetingId={meetingId}
             onCancelMeeting={() => {}}
             isCancelling={false}
+          />
+        )}
+
+        {isActive && (
+          <ActiveState 
+            meetingId={meetingId}
           />
         )}
         
