@@ -12,6 +12,7 @@ import { useConfirm } from '../../hooks/use-confirm';
 import { UpdateMeetingDialog } from '../components/update-meeting-dialog';
 import { UpcommingState } from '../components/upcoming-state';
 import { ActiveState } from '../components/active-state';
+import { CancelledState } from '../components/cancelled-state';
 
 interface Props {
   meetingId: string
@@ -78,7 +79,7 @@ export const MeetingIdView = ({ meetingId }: Props) => {
           onEdit={() => setUpdateMeetingDialogOpen(true)}
           onRemove={handleRemoveMeeting}
         />
-        {isCancelled && <div>Cancelled</div>}
+        {isCancelled && <CancelledState />}
         {isProcessing && <div>Processing</div>}
         {isCompleted && <div>Completed</div>}
         {isUpcoming && (
