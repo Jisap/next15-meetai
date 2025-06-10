@@ -7,10 +7,40 @@ import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, MIN_PAGE_SIZE } from "@
 import { TRPCError } from "@trpc/server";
 import { meetingsInsertSchema, meetingsUpdateSchema } from "../schemas";
 import { MeetingStatus } from "../types";
+import { streamVideo } from "@/lib/stream-video";
+import { generateAvatarUri } from "@/lib/avatar";
 
 
 
 export const meetingsRouter = createTRPCRouter({
+
+  generateToken: protectedProcedure
+    .mutation(async ({ ctx }) => {                                    // Se genera un token para la API de Stream. Este token se utiliza para autenticar al usuario con la API de Stream Video, permitiéndole participar en videollamadas.
+      await streamVideo.upsertUsers([                                 // 1º Actualiza o inserta al usuario en Stream Video 
+        {
+          id: ctx.auth.user.id,
+          name: ctx.auth.user.name,
+          role: "admin",
+          image: 
+            ctx.auth.user.image ??
+            generateAvatarUri({
+              seed: ctx.auth.user.name,
+              variant: "initials"
+            })
+        }
+      ])
+
+      const expirationTime = Math.floor(Date.now() / 1000) + 3600; // 2º Define el tiempo de expiración del token. Expira en 1 hora
+      const issuedAt = Math.floor(Date.now() / 1000) - 60;         // 3º Define el tiempo de emisión del token (cuando fue generado). 
+    
+      const token = streamVideo.generateUserToken({                // 4º Genera el token de stream video
+        user_id: ctx.auth.user.id,
+        exp: expirationTime,
+        validity_in_seconds: issuedAt
+      })
+
+      return token
+    }),
 
   remove: protectedProcedure
     .input(z.object({ id: z.string() }))
