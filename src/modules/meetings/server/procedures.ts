@@ -85,8 +85,8 @@ export const meetingsRouter = createTRPCRouter({
 
   create: protectedProcedure
     .input(meetingsInsertSchema)
-    .mutation(async ({ input, ctx }) => {
-      const [createdMeeting] = await db // Drizzle siempre devuelve un array
+    .mutation(async ({ input, ctx }) => {                               // Se crea un nuevo meeting en la base de datos y se crea una videollamada en la API de Stream Video
+      const [createdMeeting] = await db                                 // Drizzle siempre devuelve un array
         .insert(meetings)
         .values({
           ...input,
@@ -94,9 +94,53 @@ export const meetingsRouter = createTRPCRouter({
         })
         .returning();
 
-      // TODO: Create Stream Call, upsert Stream Users
+      const call = streamVideo.video.call("default", createdMeeting.id) // Cada vez que creamos un meeting se creará una instacia de call de stream video
+      await call.create({                                               // Para configurar la llamada usamos el método create de la API de Stream Video
+        data: {
+          created_by_id: ctx.auth.user.id,                              // Se establece como creador el id del usuario que creó la reunión
+          custom: {                                                     // Se establece información personalizada  
+            meetingId: createdMeeting.id,                               // desde las props de la reunión  
+            meetingName: createdMeeting.name,
+          },
+          settings_override: {                                          // Se establecen ajustes expecíficos para la llamada
+            transcription: {                                            // Se habilita la transcripción automática
+              language: "en",
+              mode: "auto-on",
+              closed_caption_mode: "auto-on",
+            },
+            recording: {                                                // Se habilita la grabación automática en 1080
+              mode: "auto-on",
+              quality: "1080p"
+            }
+          }
+        }
+      });
 
-      return createdMeeting;
+      const [existingAgent] = await db                                  // Se busca en bd el agente asociado al meeting
+        .select()
+        .from(agents)
+        .where(eq(agents.id, createdMeeting.agentId))
+
+      if(!existingAgent) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Agent not found"
+        })
+      }
+
+      await streamVideo.upsertUsers([                                  // Actualiza o inserta el agente en el Stream Video           
+        {
+          id: existingAgent.id,
+          name: existingAgent.name,
+          role: "user",
+          image: generateAvatarUri({
+            seed: existingAgent.name,
+            variant: "bottsNeutral"
+          })
+        }
+      ])
+
+      return createdMeeting; //  Finalmente, devuelve el objeto createdMeeting que se insertó en la base de datos al principio.
     }),
 
   getOne: protectedProcedure
