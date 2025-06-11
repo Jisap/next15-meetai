@@ -29,6 +29,8 @@ const Page = async({ searchParams }: Props) => {
   const queryClient = getQueryClient();
   void queryClient.prefetchQuery(trpc.meetings.getMany.queryOptions({...filters}));
 
+  // /page -> MeetingsView -> DataTable -> MeetingIdPage -> MeetingIdView -> upcomingState -> /call/:meetingId -> CallView
+
   return (
     <>
       <MeetingsListHeader />
