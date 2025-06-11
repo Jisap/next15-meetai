@@ -23,7 +23,7 @@ export const CallProvider = ({ meetingId, meetingName }: Props) => {
   }
 
   return(
-    <div className="text-white">
+    <div className="h-full">
       <CallConnect 
         meetingId={meetingId}
         meetingName={meetingName}
