@@ -8,15 +8,15 @@ interface Props {
 }
 
 export const CallUI = ({ meetingName }: Props) => {
-  const call = useCall(); 
+  const call = useCall(); // instancia de la llamada actual
   const [show, setShow] = useState<"lobby" | "call" | "ended">("lobby");
 
   const handleJoin = async () => {
     if(!call) return;
 
-    await call.join();
+    await call.join(); // Inicia el proceso de unirse a la llamada, cuando se resuelve la promesa se inicia la llamada
 
-    setShow("call");
+    setShow("call");   // Cambia el estado de la vista a "call" -> nuevo renderizado -> componente de call
   }
 
   const handleLeave = async () => {
