@@ -121,6 +121,21 @@ export async function POST(req: NextRequest){
     realtimeClient.updateSession({
       instructions: existingAgent.instructions
     })
+  
+  } else if (eventType === "call.session_participant_left") {
+    
+    const event = payload as CallSessionParticipantLeftEvent;
+    const meetingId = event.call_cid.split(":")[1];
+
+    if (!meetingId) {
+      return NextResponse.json(
+        { error: "Missing meetingId" },
+        { status: 400 }
+      )
+    }
+
+    const call = streamVideo.video.call("default", meetingId);
+    await call.end();
   }
 
   return NextResponse.json({ status: "ok" });
