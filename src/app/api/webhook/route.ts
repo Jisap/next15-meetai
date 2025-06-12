@@ -2,9 +2,9 @@
 import { and, eq, not } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import {
-  CallEndedEvent,
-  MessageNewEvent,
-  CallTranscriptionReadyEvent,
+  //CallEndedEvent,
+  //MessageNewEvent,
+  //CallTranscriptionReadyEvent,
   CallSessionParticipantLeftEvent,
   CallRecordingReadyEvent,
   CallSessionStartedEvent,
@@ -114,7 +114,7 @@ export async function POST(req: NextRequest){
 
     const realtimeClient = await streamVideo.video.connectOpenAi({
       call,
-      openAiApiKey: process.env.GEMINI_API_KEY!,
+      openAiApiKey: process.env.OPENAI_API_KEY!,
       agentUserId: existingAgent.id,
     })
 
