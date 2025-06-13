@@ -2,9 +2,9 @@
 import { and, eq, not } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import {
-  //CallEndedEvent,
-  //MessageNewEvent,
-  //CallTranscriptionReadyEvent,
+  CallEndedEvent,
+  MessageNewEvent,
+  CallTranscriptionReadyEvent,
   CallSessionParticipantLeftEvent,
   CallRecordingReadyEvent,
   CallSessionStartedEvent,
@@ -125,7 +125,7 @@ export async function POST(req: NextRequest){
   } else if (eventType === "call.session_participant_left") {
     
     const event = payload as CallSessionParticipantLeftEvent;
-    const meetingId = event.call_cid.split(":")[1];
+    const meetingId = event.call_cid.split(":")[1]; // call_cid is formatted as "type:id"
 
     if (!meetingId) {
       return NextResponse.json(
@@ -136,6 +136,31 @@ export async function POST(req: NextRequest){
 
     const call = streamVideo.video.call("default", meetingId);
     await call.end();
+  
+  } else if (eventType === "call.session_ended"){                     // Si el evento es call.session_ended
+    
+    const event = payload as CallEndedEvent;                           
+    const meetingId = event.call.custom?.meetingId
+
+    if(!meetingId){
+      return NextResponse.json(
+        { error: "Missing meetingId" },
+        { status: 400 }
+      )
+    }
+
+    await db                                                          // Se actualiza el estado de la reunión en la base de datos
+      .update(meetings)
+      .set({
+        status: "processing",
+        endedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(meetings.id, meetingId),
+          eq(meetings.status, "active"),
+        )
+      )
   }
 
   return NextResponse.json({ status: "ok" });
