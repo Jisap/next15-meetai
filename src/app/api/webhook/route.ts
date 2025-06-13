@@ -161,7 +161,7 @@ export async function POST(req: NextRequest){
           eq(meetings.status, "active"),
         )
       )
-  } else if (eventType === "call"){
+  } else if (eventType === "call.transcription_ready"){
     const event = payload as CallTranscriptionReadyEvent;              // Si el evento es callTRanscriptionReadyEvent
     const meetingId = event.call_cid.split(":")[1]; // call_cid is formatted as "type:id"
 
