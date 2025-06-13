@@ -161,6 +161,41 @@ export async function POST(req: NextRequest){
           eq(meetings.status, "active"),
         )
       )
+  } else if (eventType === "call"){
+    const event = payload as CallTranscriptionReadyEvent;              // Si el evento es callTRanscriptionReadyEvent
+    const meetingId = event.call_cid.split(":")[1]; // call_cid is formatted as "type:id"
+
+    const [updateMeeting] = await db                                    // Se actualiza el estado de la reunión en la base de datos
+      .update(meetings)
+      .set({                                                            // estableciendo la prop transcriptUrl con la url de la transcripción
+        transcriptUrl: event.call_transcription.url,
+      })
+      .where(
+        eq(meetings.id, meetingId)
+      )
+      .returning()
+      
+      if(!updateMeeting){
+        return NextResponse.json(
+          { error: "Meeting not found" },
+          { status: 404 }
+        )
+      }
+
+      //TODO: Call Ingest background job to summarize the transcript
+
+  } else if (eventType === "call.recording_ready"){                    // Si el evento es call.recording_ready
+    const event = payload as CallRecordingReadyEvent;              
+    const meetingId = event.call_cid.split(":")[1];
+
+    await db                                                            // Se actualiza el estado de la reunión en la base de datos
+      .update(meetings)
+      .set({                                                            // estableciendo la prop recordingUrl con la url de la grabación
+        recordingUrl: event.call_recording.url,
+      })
+      .where(
+        eq(meetings.id, meetingId)
+      )
   }
 
   return NextResponse.json({ status: "ok" });
