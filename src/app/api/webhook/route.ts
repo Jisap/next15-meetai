@@ -112,13 +112,13 @@ export async function POST(req: NextRequest){
 
     const call = streamVideo.video.call("default", meetingId)       // Se crea una nueva llamada de stream video con el id del meeting
 
-    const realtimeClient = await streamVideo.video.connectOpenAi({
+    const realtimeClient = await streamVideo.video.connectOpenAi({  // Se conecta la llamada a OpenAI
       call,
       openAiApiKey: process.env.OPENAI_API_KEY!,
       agentUserId: existingAgent.id,
     })
 
-    realtimeClient.updateSession({
+    realtimeClient.updateSession({                                   // Se actualiza la sesión de OpenAI
       instructions: existingAgent.instructions
     })
   
@@ -196,7 +196,8 @@ export async function POST(req: NextRequest){
       .where(
         eq(meetings.id, meetingId)
       )
-  }
+    }
+
 
   return NextResponse.json({ status: "ok" });
 }
