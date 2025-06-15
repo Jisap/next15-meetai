@@ -1,5 +1,5 @@
 import { inngest } from "@/app/inngest/client";
-import { helloWorld } from "@/app/inngest/functions";
+import { meetingsProcessing } from "@/app/inngest/functions";
 import { serve } from "inngest/next";
 
 // Inngest es un servicio que te ayuda a ejecutar tareas en segundo plano
@@ -16,6 +16,6 @@ import { serve } from "inngest/next";
 export const { GET, POST, PUT } = serve({
   client: inngest,
   functions: [
-    helloWorld
+    meetingsProcessing
   ],
 });

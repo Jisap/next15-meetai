@@ -12,6 +12,7 @@ import {
 import { db } from "@/db";
 import { agents, meetings } from '../../../db/schema';
 import { streamVideo } from "@/lib/stream-video";
+import { inngest } from "@/app/inngest/client";
 
 function verifySignatureWithSDK(                    // Comprueba si la solicitud realmente proviene de Stream y no ha sido manipulada
   body: string,                                     // Recibe el cuerpo de la solicitud y                   
@@ -165,7 +166,7 @@ export async function POST(req: NextRequest){
     const event = payload as CallTranscriptionReadyEvent;              // Si el evento es callTRanscriptionReadyEvent
     const meetingId = event.call_cid.split(":")[1]; // call_cid is formatted as "type:id"
 
-    const [updateMeeting] = await db                                    // Se actualiza el estado de la reunión en la base de datos
+    const [updatedMeeting] = await db                                    // Se actualiza el estado de la reunión en la base de datos
       .update(meetings)
       .set({                                                            // estableciendo la prop transcriptUrl con la url de la transcripción
         transcriptUrl: event.call_transcription.url,
@@ -175,14 +176,20 @@ export async function POST(req: NextRequest){
       )
       .returning()
       
-      if(!updateMeeting){
+      if(!updatedMeeting){
         return NextResponse.json(
           { error: "Meeting not found" },
           { status: 404 }
         )
       }
 
-      //TODO: Call Ingest background job to summarize the transcript
+      await inngest.send({                                             // Se envia un evento a Inngest para que inicie la tarea de transcripción
+        name: "meetings/processing",
+        data: {
+          meetingId: updatedMeeting.id,
+          transcriptingUrl: updatedMeeting.transcriptUrl
+        }
+      })
 
   } else if (eventType === "call.recording_ready"){                    // Si el evento es call.recording_ready
     const event = payload as CallRecordingReadyEvent;              
