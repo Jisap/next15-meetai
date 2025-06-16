@@ -33,7 +33,10 @@ Example:
 })
 
 
-export const meetingsProcessing = inngest.createFunction(
+export const meetingsProcessing = inngest.createFunction( // Se activa cuando en el webhook de getStream de dispara el evento "call.transcription_ready" -> event "meetings/processing"
+
+  // Esta función recibe el meetingId de la reunión y la transcriptUrl de la reunión
+
 
   { id: "meetings/processing" },
   { event: "meetings/processing" },
@@ -70,7 +73,7 @@ export const meetingsProcessing = inngest.createFunction(
         .where(inArray(agents.id, speakersIds))
         .then((agents) =>
           agents.map((agent) => ({
-            ...user,
+            ...agent,
           }))
         )
 
@@ -99,12 +102,12 @@ export const meetingsProcessing = inngest.createFunction(
       })
     })
 
-    const { output } = await summarizer.run(
-      "Summarize the following transcript" + 
-      JSONL.stringify(transcriptWithSpeakers)
+    const { output } = await summarizer.run(                             // Genera el resumen de la transcripción
+      "Summarize the following transcript" +                             // Utiliza un "agente" de Inngest llamado summarizer. 
+      JSONL.stringify(transcriptWithSpeakers)                            // Este agente está configurado para usar el modelo gpt-4o de OpenAI.
     )
 
-    await step.run("save-summary", async () => {
+    await step.run("save-summary", async () => {                         // Guarda el resumen en bd
       await db
         .update(meetings)
         .set({

@@ -26,8 +26,8 @@ function verifySignatureWithSDK(                    // Comprueba si la solicitud
 
 export async function POST(req: NextRequest){
 
-  const signature = req.headers.get("x-signature");    // Obtiene la firma de la solicitud
-  const apikey = req.headers.get("x-api-key");         // Obtiene la clave de API de Stream
+  const signature = req.headers.get("x-signature");          // Obtiene la firma de la solicitud
+  const apikey = req.headers.get("x-api-key");               // Obtiene la clave de API de Stream
 
   if(!signature || !apikey){
     return NextResponse.json(
@@ -36,10 +36,10 @@ export async function POST(req: NextRequest){
     )
   }
 
-  const body = await req.text();                       // Obtiene el cuerpo de la solicitud como texto plano porque la verificación se basa en el contenido exacto
+  const body = await req.text();                              // Obtiene el cuerpo de la solicitud como texto plano porque la verificación se basa en el contenido exacto
 
 
-  if(!verifySignatureWithSDK(body, signature)){        // Verifica si la firma es válida
+  if(!verifySignatureWithSDK(body, signature)){               // Verifica si la firma es válida
     return NextResponse.json(
       { error: "Invalid signature" },
       { status: 401 }
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest){
   let payload: unknown;
 
   try{
-    payload = JSON.parse(body) as Record<string, unknown>; // Se parsea el cuerpo de la solicitud (que es una cadena de texto con formato JSON) para convertirlo en un objeto JavaScript.
+    payload = JSON.parse(body) as Record<string, unknown>;     // Se parsea el cuerpo de la solicitud (que es una cadena de texto con formato JSON) para convertirlo en un objeto JavaScript.
   }catch{
     return NextResponse.json(
       { error: "Invalid payload" },
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest){
       )
     }
 
-    await db                                                      // Se actualiza el estado de la reunión en la base de datos
+    await db                                                       // Se actualiza el estado de la reunión en la base de datos
       .update(meetings)
       .set({
         status: "active",
@@ -113,7 +113,7 @@ export async function POST(req: NextRequest){
 
     const call = streamVideo.video.call("default", meetingId)       // Se crea una nueva llamada de stream video con el id del meeting
 
-    const realtimeClient = await streamVideo.video.connectOpenAi({  // Se conecta la llamada a OpenAI
+    const realtimeClient = await streamVideo.video.connectOpenAi({  // Se conecta la llamada a OpenAI -> transcripción de la conversación
       call,
       openAiApiKey: process.env.OPENAI_API_KEY!,
       agentUserId: existingAgent.id,
@@ -164,11 +164,11 @@ export async function POST(req: NextRequest){
       )
   } else if (eventType === "call.transcription_ready"){
     const event = payload as CallTranscriptionReadyEvent;              // Si el evento es callTRanscriptionReadyEvent
-    const meetingId = event.call_cid.split(":")[1]; // call_cid is formatted as "type:id"
+    const meetingId = event.call_cid.split(":")[1];                    // call_cid is formatted as "type:id"
 
-    const [updatedMeeting] = await db                                    // Se actualiza el estado de la reunión en la base de datos
+    const [updatedMeeting] = await db                                  // Se actualiza el estado de la reunión en la base de datos
       .update(meetings)
-      .set({                                                            // estableciendo la prop transcriptUrl con la url de la transcripción
+      .set({                                                           // estableciendo la prop transcriptUrl con la url de la transcripción
         transcriptUrl: event.call_transcription.url,
       })
       .where(
@@ -183,8 +183,8 @@ export async function POST(req: NextRequest){
         )
       }
 
-      await inngest.send({                                             // Se envia un evento a Inngest para que inicie la tarea de transcripción
-        name: "meetings/processing",
+      await inngest.send({                                             // Se envia un evento a Inngest para que inicie la tarea de enrriquecimiento de la transcripción
+        name: "meetings/processing",                                   // Para ello se invoca la function "mmeetings/processing" de inngest
         data: {
           meetingId: updatedMeeting.id,
           transcriptingUrl: updatedMeeting.transcriptUrl

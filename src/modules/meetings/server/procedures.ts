@@ -85,7 +85,7 @@ export const meetingsRouter = createTRPCRouter({
 
   create: protectedProcedure
     .input(meetingsInsertSchema)
-    .mutation(async ({ input, ctx }) => {                               // Se crea un nuevo meeting en la base de datos y se crea una videollamada en la API de Stream Video
+    .mutation(async ({ input, ctx }) => {                               // 1º Se crea un nuevo meeting en la base de datos y se crea una videollamada en la API de Stream Video
       const [createdMeeting] = await db                                 // Drizzle siempre devuelve un array
         .insert(meetings)
         .values({
@@ -94,7 +94,7 @@ export const meetingsRouter = createTRPCRouter({
         })
         .returning();
 
-      const call = streamVideo.video.call("default", createdMeeting.id) // Cada vez que creamos un meeting se creará una instacia de call de stream video
+      const call = streamVideo.video.call("default", createdMeeting.id) // 2º Cada vez que creamos un meeting se creará una instacia de call de stream video (inicia la llamada -> getStream inicia el evento call.session_started)
       await call.create({                                               // Para configurar la llamada usamos el método create de la API de Stream Video
         data: {
           created_by_id: ctx.auth.user.id,                              // Se establece como creador el id del usuario que creó la reunión
@@ -103,7 +103,7 @@ export const meetingsRouter = createTRPCRouter({
             meetingName: createdMeeting.name,
           },
           settings_override: {                                          // Se establecen ajustes expecíficos para la llamada
-            transcription: {                                            // Se habilita la transcripción automática
+            transcription: {                                            // Se habilita la transcripción automática -> Esta se inicia cuando se termina la llamada -> dispara el evento call.session_ended -> Cuando se termina la transcripción se dispara el evento call.transcription_ready -> evento a inngest para parsear, enriquecer y resumir la reunion con openai 
               language: "en",
               mode: "auto-on",
               closed_caption_mode: "auto-on",
@@ -116,7 +116,7 @@ export const meetingsRouter = createTRPCRouter({
         }
       });
 
-      const [existingAgent] = await db                                  // Se busca en bd el agente asociado al meeting
+      const [existingAgent] = await db                                  // 3ºSe busca en bd el agente asociado al meeting
         .select()
         .from(agents)
         .where(eq(agents.id, createdMeeting.agentId))
@@ -128,7 +128,7 @@ export const meetingsRouter = createTRPCRouter({
         })
       }
 
-      await streamVideo.upsertUsers([                                  // Actualiza o inserta el agente en el Stream Video           
+      await streamVideo.upsertUsers([                                  // 4º Actualiza o inserta el agente en el Stream Video           
         {
           id: existingAgent.id,
           name: existingAgent.name,
