@@ -11,6 +11,7 @@ import {
 import Markdown from "react-markdown";
 import Link from "next/link";
 import { GeneratedAvatar } from "@/components/generated-avatar";
+import { format } from "date-fns";
 
 
 
@@ -87,7 +88,8 @@ const CompletedState = ({ data }: Props) => {
                     className="size-5"
                   />
                   {data.agent.name}
-                </Link>
+                </Link>{" "}
+                <p>{data.startedAt ? format(data.startedAt, "PPP") : ""}</p>
               </div>
             </div>
           </div>
