@@ -12,6 +12,8 @@ import Markdown from "react-markdown";
 import Link from "next/link";
 import { GeneratedAvatar } from "@/components/generated-avatar";
 import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
+import { formatDuration } from "@/lib/utils";
 
 
 
@@ -91,6 +93,19 @@ const CompletedState = ({ data }: Props) => {
                 </Link>{" "}
                 <p>{data.startedAt ? format(data.startedAt, "PPP") : ""}</p>
               </div>
+
+              <div className="flex gap-x-2 items-center">
+                <SparklesIcon className="size-4" />
+                <p>General summary</p>
+              </div>
+
+              <Badge
+                variant="outline"
+                className="flex items-center gap-x-2 [&>svg]:size-4"
+              >
+                <ClockFadingIcon className="text-blue-700"/>
+                {data.duration ? formatDuration(data.duration) : "No duration"}
+              </Badge>
             </div>
           </div>
         </TabsContent>
