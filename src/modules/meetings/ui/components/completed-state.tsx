@@ -56,6 +56,16 @@ const CompletedState = ({ data }: Props) => {
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
         </div>
+
+        <TabsContent value="recording">
+          <div className="bg-white rounded-lg border px-4 py-5">
+            <video 
+              src={data.recordingUrl!}
+              className="w-full rounded-lg"
+              controls
+            />
+          </div>
+        </TabsContent>
       </Tabs>
     </div>
   )
