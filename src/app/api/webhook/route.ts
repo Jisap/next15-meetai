@@ -59,7 +59,7 @@ export async function POST(req: NextRequest){
 
   const eventType = (payload as Record<string, unknown>)?.type; // Extrae la prop type del objeto payload. type nos indica que tipo de evento ha ocurrido
 
-  if(eventType === "call.session_started"){                     // Si el evento es call.session_started 
+  if(eventType === "call.session_started"){                     // Si el evento es call.session_started ( se inicia la llamada )
     const event = payload as CallSessionStartedEvent;           // se convierte el payload en un objeto de tipo CallSessionStartedEvent para acceder a sus propiedades de forma segura
     const meetingId = event.call.custom?.meetingId;             // Se extrae el meetingId personalizado que se estableció al crear la llamada
 
@@ -111,22 +111,22 @@ export async function POST(req: NextRequest){
       )
     }
 
-    const call = streamVideo.video.call("default", meetingId)       // Se crea una nueva llamada de stream video con el id del meeting
+    const call = streamVideo.video.call("default", meetingId)       // Se obtiene una instancia de la llamada de stream video con el id del meeting, lo cual nos permite interactuar con esa llamada
 
-    const realtimeClient = await streamVideo.video.connectOpenAi({  // Se conecta la llamada a OpenAI -> transcripción de la conversación
+    const realtimeClient = await streamVideo.video.connectOpenAi({  // como conectarse con OpenAI -> transcripción de la conversación
       call,
       openAiApiKey: process.env.OPENAI_API_KEY!,
       agentUserId: existingAgent.id,
     })
 
-    realtimeClient.updateSession({                                   // Se actualiza la sesión de OpenAI
+    realtimeClient.updateSession({                                   // Se actualiza la sesión de OpenAI. En este punto tenemos la llamada de streamVideo activa y conectada a OpenAI. Lo siguiente es que se desarrolle y que termine lo cual disparará el evento "call.session_ended"
       instructions: existingAgent.instructions
     })
   
   } else if (eventType === "call.session_participant_left") {
     
     const event = payload as CallSessionParticipantLeftEvent;
-    const meetingId = event.call_cid.split(":")[1]; // call_cid is formatted as "type:id"
+    const meetingId = event.call_cid.split(":")[1];                  // call_cid is formatted as "type:id"
 
     if (!meetingId) {
       return NextResponse.json(
@@ -163,7 +163,7 @@ export async function POST(req: NextRequest){
         )
       )
   } else if (eventType === "call.transcription_ready"){
-    const event = payload as CallTranscriptionReadyEvent;              // Si el evento es callTRanscriptionReadyEvent
+    const event = payload as CallTranscriptionReadyEvent;              // Si el evento es callTRanscriptionReadyEvent (despues de finalizar la reunión)
     const meetingId = event.call_cid.split(":")[1];                    // call_cid is formatted as "type:id"
 
     const [updatedMeeting] = await db                                  // Se actualiza el estado de la reunión en la base de datos

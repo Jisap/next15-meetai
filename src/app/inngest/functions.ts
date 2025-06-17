@@ -107,7 +107,7 @@ export const meetingsProcessing = inngest.createFunction( // Se activa cuando en
       JSONL.stringify(transcriptWithSpeakers)                            // Este agente está configurado para usar el modelo gpt-4o de OpenAI.
     )
 
-    await step.run("save-summary", async () => {                         // Guarda el resumen en bd
+    await step.run("save-summary", async () => {                         // Guarda el resumen en bd@functions
       await db
         .update(meetings)
         .set({

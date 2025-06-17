@@ -94,7 +94,7 @@ export const meetingsRouter = createTRPCRouter({
         })
         .returning();
 
-      const call = streamVideo.video.call("default", createdMeeting.id) // 2º Cada vez que creamos un meeting se creará una instacia de call de stream video (inicia la llamada -> getStream inicia el evento call.session_started)
+      const call = streamVideo.video.call("default", createdMeeting.id) // 2º Cada vez que creamos un meeting se creará una instancia de call de stream video (inicia la llamada -> getStream inicia el evento call.session_started) (la llamada existe pero aun no ha comenzado porque nadie se ha unido)
       await call.create({                                               // Para configurar la llamada usamos el método create de la API de Stream Video
         data: {
           created_by_id: ctx.auth.user.id,                              // Se establece como creador el id del usuario que creó la reunión
@@ -128,7 +128,7 @@ export const meetingsRouter = createTRPCRouter({
         })
       }
 
-      await streamVideo.upsertUsers([                                  // 4º Actualiza o inserta el agente en el Stream Video           
+      await streamVideo.upsertUsers([                                  // 4º Actualiza o inserta el agente en la plataforma de StreamVideo           
         {
           id: existingAgent.id,
           name: existingAgent.name,
