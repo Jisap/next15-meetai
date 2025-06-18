@@ -1,14 +1,16 @@
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
-import { agents, meetings } from '../../../db/schema';
+import { agents, meetings, user } from '../../../db/schema';
 import { db } from "@/db";
 import { z } from "zod";
-import { and, count, desc, eq, getTableColumns, ilike, sql } from "drizzle-orm";
+import { and, count, desc, eq, getTableColumns, ilike, inArray, sql } from "drizzle-orm";
 import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, MIN_PAGE_SIZE } from "@/constants";
 import { TRPCError } from "@trpc/server";
 import { meetingsInsertSchema, meetingsUpdateSchema } from "../schemas";
-import { MeetingStatus } from "../types";
+import { MeetingStatus, StreamTranscriptItem } from "../types";
 import { streamVideo } from "@/lib/stream-video";
 import { generateAvatarUri } from "@/lib/avatar";
+import JSONL from "jsonl-parse-stringify";
+
 
 
 
@@ -238,4 +240,97 @@ export const meetingsRouter = createTRPCRouter({
       }
     }),
 
+  getTranscript: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const [existingMeeting] = await db
+        .select()
+        .from(meetings)
+        .where(
+          and(
+            eq(meetings.id, input.id),
+            eq(meetings.userId, ctx.auth.user.id)
+          )
+        )
+
+      if (!existingMeeting) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Meeting not found" })
+      }
+
+      if(!existingMeeting.transcriptUrl) {
+        return []
+      }
+
+      const transcript = await fetch(existingMeeting.transcriptUrl) // Se obtiene la transcripción de la reunión
+        .then((res) => res.text())
+        .then((text) => JSONL.parse<StreamTranscriptItem>(text))
+        .catch(() => {
+          return []
+        });
+
+      const speakersIds = [                                         // Se obtienen los ids de los speakers de la transcripción
+        ...new Set(transcript.map((item) => item.speaker_id)),
+      ]
+
+      const userSpeakers = await db                                 // Se obtienen los userSpeakers de la tabla user
+        .select()
+        .from(user)
+        .where(inArray(user.id, speakersIds))                       // Se filtran los usuarios que pertenecen a los speakers de la transcripción
+        .then((users) =>                                            // Se transforman los usuarios en un array de objetos con solo las propiedades id y image
+          users.map((user) => ({
+            ...user,
+            image: 
+              user.image ?? generateAvatarUri({
+                seed: user.name,
+                variant: "initials"
+              })
+          }))
+        )
+
+      const agentSpeakers = await db                                // Se obtienen los agentSpeakers de la tabla agents
+        .select()
+        .from(agents)
+        .where(inArray(agents.id, speakersIds))                     // Se filtran los agentes que pertenecen a los speakers de la transcripción
+        .then((agents) =>                                           // Se transforman los agentes en un array de objetos con solo las propiedades id y image
+          agents.map((agent) => ({
+            ...agent,
+            image: generateAvatarUri({
+                seed: agent.name,
+                variant: "bottsNeutral"
+              })
+          }))
+        )
+
+      const speakers = [...userSpeakers, ...agentSpeakers]           // Se combinan los usuarios y los agentes en un array de objetos
+    
+      const transcriptWithSpeakers = transcript.map((item) => {      // Se agregan los speakers a cada item de la transcripción
+        const speaker = speakers.find(
+          (speaker) => speaker.id === item.speaker_id
+        )
+
+        if(!speaker) {                                               // Si no se encuentra el speaker en la tabla user o agents, se agrega un speaker desconocido
+          return {
+            ...item,
+            user: {
+              name: "Unknown",
+              image: generateAvatarUri({
+                seed: "Unknown",
+                variant: "initials"
+              })
+            }
+          }
+        }
+
+        return {                                                     // Si se encuentra el speaker en la tabla user o agents, se agrega el speaker
+          ...item,
+          user: {
+            name: speaker.name,
+            image: speaker.image
+          }
+        }
+
+      })
+      
+      return transcriptWithSpeakers;                                  // Se devuelve la transcripción con los speakers agregados
+    })
 })
