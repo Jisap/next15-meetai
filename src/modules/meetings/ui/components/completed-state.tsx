@@ -15,6 +15,7 @@ import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { formatDuration } from "@/lib/utils";
 import Transcript from "./Transcript";
+import { ChatProvider } from "./chat-provider";
 
 
 
@@ -66,6 +67,13 @@ const CompletedState = ({ data }: Props) => {
 
         <TabsContent value="transcript">
           <Transcript meetingId={data.id} />
+        </TabsContent>
+
+        <TabsContent value="chat">
+          <ChatProvider
+            meetingId={data.id}
+            meetingName={data.name}
+          />
         </TabsContent>
 
         <TabsContent value="recording">
