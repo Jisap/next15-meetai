@@ -14,6 +14,7 @@ import { GeneratedAvatar } from "@/components/generated-avatar";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { formatDuration } from "@/lib/utils";
+import Transcript from "./Transcript";
 
 
 
@@ -62,6 +63,10 @@ const CompletedState = ({ data }: Props) => {
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
         </div>
+
+        <TabsContent value="transcript">
+          <Transcript meetingId={data.id} />
+        </TabsContent>
 
         <TabsContent value="recording">
           <div className="bg-white rounded-lg border px-4 py-5">
