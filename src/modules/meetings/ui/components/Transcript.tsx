@@ -1,4 +1,4 @@
-import { Avatar, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { generateAvatarUri } from "@/lib/avatar"
@@ -27,7 +27,7 @@ const Transcript = ({ meetingId }: Props) => {
   });
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredData] = (data ?? []).filter((item) =>
+  const filteredData = (data ?? []).filter((item) =>
     item.text.toString().toLowerCase().includes(searchQuery.toLowerCase())
   );
   
@@ -36,7 +36,7 @@ const Transcript = ({ meetingId }: Props) => {
       <p className="text-sm font-medium">
         Transcript
       </p>
-      
+
       <div className="relative">
         <Input 
           placeholder="Search transcript"
@@ -46,6 +46,42 @@ const Transcript = ({ meetingId }: Props) => {
         />
         <SearchIcon className="absolute left-2 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" /> 
       </div>
+
+      <ScrollArea>
+        <div className="flex flex-col gap-y-4">
+          {filteredData.map((item) => {
+            const avatarUrl = item.user.image ?? generateAvatarUri({ seed: item.user.name, variant: "initials" })
+            console.log("Avatar URL being used:", avatarUrl)
+            return (
+              <div
+                key={item.start_ts}
+                className="flex flex-col gap-y-2 hover:bg-muted p-4 rounded-md border"
+              >
+                <div className="flex gap-x-2 items-center">
+                  <Avatar className="size-6">
+                    <AvatarImage 
+                      alt="User Avatar"
+                      src={item.user.image ?? generateAvatarUri({ seed:item.user.name, variant: "initials" })}
+                    />
+                    <AvatarFallback className="text-xs bg-neutral-400">
+                      {item.user.name.split(' ').map(n => n[0]).join('')}
+                    </AvatarFallback>
+                  </Avatar>
+
+                  <p className="text-sm font-medium">{item.user.name}</p>
+                
+                  <p className="text-xs text-blue-500 font-medium">
+                    {format(
+                      new Date(0,0,0,0,0,0, item.start_ts),
+                      "mm:ss"
+                    )}
+                  </p>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </ScrollArea>
     </div>
   )
 }
