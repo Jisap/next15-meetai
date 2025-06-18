@@ -46,7 +46,7 @@ export const ChatUI = ({ meetingId, meetingName, userId, userName, userImage }: 
   useEffect(() => {                                              // Se actualiza el canal cuando se cambie el meetingId
     if(!client) return
 
-    const channel = client.channel("messaging", meetingId, {     // Se crea un canal para el chat
+    const channel = client.channel("messaging", meetingId, {     // Se crea un canal para el chat de stream -> Dispara el evento "message.new" en el webhook
       members: [userId],                                         // Se agrega el usuario al canal
     })
 
@@ -64,6 +64,9 @@ export const ChatUI = ({ meetingId, meetingName, userId, userName, userImage }: 
 
   return (
     <div className="bg-white rounded-lg border overflow-hidden">
+      {/* lo que se escribe en MessageInput (por un usuario que no es el agente) inicia una cadena de eventos
+       que resulta en una interacción con OpenAI a través de tu webhook, y la respuesta de OpenAI se muestra 
+       en el chat. */}
       <Chat client={client}>
         <Channel channel={channel}>
           <Window>
@@ -73,7 +76,7 @@ export const ChatUI = ({ meetingId, meetingName, userId, userName, userImage }: 
 
             <MessageInput />
           </Window>
-          
+
           <Thread />
         </Channel>
       </Chat>

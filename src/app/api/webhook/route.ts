@@ -13,6 +13,12 @@ import { db } from "@/db";
 import { agents, meetings } from '../../../db/schema';
 import { streamVideo } from "@/lib/stream-video";
 import { inngest } from "@/app/inngest/client";
+import OpenAI from "openai";
+import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
+import { generateAvatarUri } from "@/lib/avatar";
+import { streamChat } from "@/lib/stream-chat";
+
+const openaiClient = new OpenAI({apiKey: process.env.OPENAI_API_KEY!});
 
 function verifySignatureWithSDK(                    // Comprueba si la solicitud realmente proviene de Stream y no ha sido manipulada
   body: string,                                     // Recibe el cuerpo de la solicitud y                   
@@ -203,8 +209,125 @@ export async function POST(req: NextRequest){
       .where(
         eq(meetings.id, meetingId)
       )
+
+  } else if (eventType === "message.new") {                            // Si se crea en chat-UI un canal para el chat de stream -> Dispara el evento "message.new"
+      
+      const event = payload as MessageNewEvent;                        // se convierte el payload en un objeto de tipo MessageNewEvent para acceder a sus propiedades de forma segura
+
+      const userId = event.user?.id;                                   // Se extrae el id del usuario que envió el mensaje
+      const channelId = event.channel_id;                              // Se extrae el id del canal en el que se envió el mensaje
+      const text = event.message?.text;                                // Se extrae el texto del mensaje
+
+
+      if(!userId || !channelId || !text){
+        return NextResponse.json(
+          { error: "Missing required fields" },
+          { status: 400 }
+        )
+      }
+
+      const [existingMeeting] = await db                               // Se busca en la base de datos si existe un meeting con el id especificado
+        .select()
+        .from(meetings)
+        .where(
+          and(
+            eq(meetings.id, channelId),
+            eq(meetings.status, "completed")
+          )
+        )
+
+      if(!existingMeeting){
+        return NextResponse.json(
+          { error: "Meeting not found" },
+          { status: 404 }
+        )
+      } 
+      
+      const [existingAgent] = await db                                // Se busca en tabla agents si existe un agente asociado al meeting
+        .select()
+        .from(agents)
+        .where(
+          eq(agents.id, existingMeeting.agentId)
+        )
+
+      if(!existingAgent){
+        return NextResponse.json(
+          { error: "Agent not found" },
+          { status: 404 }
+        )
+      }
+
+      if(userId !== existingAgent.id){ // Si el usuario que envió el mensaje no es el agente del meeting...
+
+        const instructions =  `
+          You are an AI assistant helping the user revisit a recently completed meeting.
+          Below is a summary of the meeting, generated from the transcript:
+      
+          ${existingMeeting.summary}
+      
+          The following are your original instructions from the live meeting assistant. Please continue to follow these behavioral guidelines as you assist the user:
+      
+          ${existingAgent.instructions}
+      
+          The user may ask questions about the meeting, request clarifications, or ask for follow-up actions.
+          Always base your responses on the meeting summary above.
+      
+          You also have access to the recent conversation history between you and the user. Use the context of previous messages to provide relevant, coherent, and helpful responses. If the user's question refers to something discussed earlier, make sure to take that into account and maintain continuity in the conversation.
+      
+          If the summary does not contain enough information to answer a question, politely let the user know.
+      
+          Be concise, helpful, and focus on providing accurate information from the meeting and the ongoing conversation.
+        `;
+
+        const channel = streamChat.channel("messaging", channelId);        // Se obtiene una instancia del canal de chat específico donde se envió el mensaje.
+        await channel.watch();                                             // Nos aseguramos que el cliente esté suscrito a las actualizaciones en tiempo real de este canal. Esto es necesario para acceder al estado actual del canal, como los mensajes anteriores.
+
+        const previousMessages = channel.state.messages                    // Se extraen los mensajes anteriores del canal
+          .slice(-5)                                                       //   - Se extraen los últimos 5 mensajes
+          .filter((msg) => msg.text && msg.text.trim() !== "")             //   - Se filtran mensajes vacíos o que solo contengan espacios en blanco.
+          .map<ChatCompletionMessageParam>((message) => ({                 //   - Se transforman en objetos de tipo ChatCompletionMessageParam para que OpenAI pueda procesarlos.
+            role: (message.user?.id === existingAgent.id ? "assistant" : "user"),
+            content: message.text || ""
+          }))
+
+        const GPTResponse = await openaiClient.chat.completions.create({   // Se envía una solicitud POST a la API de OpenAI para obtener una respuesta del chat
+          messages: [
+            {role: "system", content: instructions},
+            ...previousMessages,
+            {role: "user", content: text}
+          ],
+          model: "gpt-4o"
+        })
+
+        const GPTResponseText = GPTResponse.choices[0].message.content;   // Se extrae el texto de la respuesta de OpenAI
+
+        if(!GPTResponseText){
+          return NextResponse.json(
+            { error: "No response from GPT" },
+            { status: 400 }
+          )
+        }
+
+        const avatarUrl = generateAvatarUri({                             // Se genera un avatar para el agente
+          seed: existingAgent.name,
+          variant: "bottsNeutral"
+        })
+
+        streamChat.upsertUser({                                           // Se actualiza el usuario en la plataforma de StreamChat
+          id: existingAgent.id,
+          name: existingAgent.name,
+          image: avatarUrl
+        })
+
+        channel.sendMessage({                                            // Se envía un mensaje al canal de chat
+          text: GPTResponseText,
+          user: {
+            id: existingAgent.id,
+            name: existingAgent.name,
+            image: avatarUrl
+          }
+        })
+      }
     }
-
-
   return NextResponse.json({ status: "ok" });
 }
