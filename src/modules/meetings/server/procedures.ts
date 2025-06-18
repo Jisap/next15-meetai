@@ -10,6 +10,7 @@ import { MeetingStatus, StreamTranscriptItem } from "../types";
 import { streamVideo } from "@/lib/stream-video";
 import { generateAvatarUri } from "@/lib/avatar";
 import JSONL from "jsonl-parse-stringify";
+import { streamChat } from "@/lib/stream-chat";
 
 
 
@@ -332,5 +333,15 @@ export const meetingsRouter = createTRPCRouter({
       })
       
       return transcriptWithSpeakers;                                  // Se devuelve la transcripción con los speakers agregados
-    })
+    }),
+
+  generateChatToken: protectedProcedure.mutation((async({ ctx }) => { // Se genera un token para la API de Stream Chat
+    const token = streamChat.createToken(ctx.auth.user.id)            // Se crea un token para el usuario autenticado
+      await streamChat.upsertUser({                                   // Se actualiza el usuario en la plataforma de StreamChat
+        id: ctx.auth.user.id,
+        role: "admin"
+      })
+    return token
+  }))
+      
 })
