@@ -34,11 +34,20 @@ export const DashboardTrial = () => {
         </div>
         <div className="flex flex-col gap-y-2">
           <p className="text-xs">
-            {data.meetingCount}/{MAX_FREE_MEETINGS} Agents
+            {data.meetingCount}/{MAX_FREE_MEETINGS} Meetings
           </p>
           <Progress value={(data.meetingCount / MAX_FREE_MEETINGS) * 100} />
         </div>
       </div>
+
+      <Button
+        asChild
+        className="bg-transparent border-t border-border/10 hover:bg-white/10 rounded-t-none"
+      >
+        <Link href="/upgrade">
+          Upgrade
+        </Link>
+      </Button>
     </div>
   )
 }
