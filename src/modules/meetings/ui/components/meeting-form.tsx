@@ -54,11 +54,15 @@ export const MeetingForm = ({ onSuccess, onCancel, initialValues }: MeetingFormP
   // Mutation createAgent
   const createMeeting = useMutation(trpc.meetings.create.mutationOptions({ // useMutation para crear un meeting
     onSuccess: async(data) => {
+      
       await queryClient.invalidateQueries(
         trpc.meetings.getMany.queryOptions({})
       ); // Se invalida la consulta de agentes si se crea un nuevo meeting
     
-      //TODO: Invalidate free tier usage
+      await queryClient.invalidateQueries(
+        trpc.premium.getFreeUsage.queryOptions()
+      ); // Se invalida la consulta de premium si se crea un nuevo meeting para actualizar el uso de recursos premium
+
       onSuccess?.(data.id); // Cierra el dialogo y redirige a la página del nuevo meeting
     },
     onError: (error) => {

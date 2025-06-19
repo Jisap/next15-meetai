@@ -42,11 +42,15 @@ export const AgentForm = ({ onSuccess, onCancel, initialValues }: AgentFormProps
   // Mutation createAgent
   const createAgent = useMutation(trpc.agents.create.mutationOptions({ // useMutation para crear un agente
     onSuccess: async() => {
+      
       await queryClient.invalidateQueries(
         trpc.agents.getMany.queryOptions({})
       ); // Se invalida la consulta de agentes si se crea un nuevo agente
     
-      //TODO: Invalidate free tier usage
+      await queryClient.invalidateQueries(
+        trpc.premium.getFreeUsage.queryOptions()
+      ); // Se invalida la consulta de premium si se crea un nuevo agente para actualizar el uso de recursos premium
+
       onSuccess?.(); // Cierra el dialogo
     },
     onError: (error) => {
