@@ -24,6 +24,7 @@ import { useState } from "react";
 import { CommandSelect } from "@/components/command-select";
 import { GeneratedAvatar } from "@/components/generated-avatar";
 import { NewAgentDialog } from "@/modules/agents/ui/components/new-agent-dialog";
+import { useRouter } from "next/navigation";
 
 
 
@@ -40,6 +41,7 @@ interface MeetingFormProps {
 
 export const MeetingForm = ({ onSuccess, onCancel, initialValues }: MeetingFormProps) => {
 
+  const router = useRouter();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
@@ -65,10 +67,12 @@ export const MeetingForm = ({ onSuccess, onCancel, initialValues }: MeetingFormP
 
       onSuccess?.(data.id); // Cierra el dialogo y redirige a la página del nuevo meeting
     },
-    onError: (error) => {
-      toast.error(error.message);
-      //TODO: Chek if error code is "FORBIDDEN" and redirect to /upgrade
-    },
+      onError: (error) => {
+        toast.error(error.message);
+        if (error.data?.code === "FORBIDDEN") {
+          router.push("/upgrade");
+        }
+      },
     })
   );
 
@@ -88,7 +92,6 @@ export const MeetingForm = ({ onSuccess, onCancel, initialValues }: MeetingFormP
     },
     onError: (error) => {
       toast.error(error.message);
-      //TODO: Chek if error code is "FORBIDDEN" and redirect to /upgrade
     },
   })
   );

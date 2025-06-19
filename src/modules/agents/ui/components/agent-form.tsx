@@ -20,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 
 
@@ -36,7 +37,7 @@ interface AgentFormProps {
 export const AgentForm = ({ onSuccess, onCancel, initialValues }: AgentFormProps) => {
 
   const trpc = useTRPC();
-  //const router = useRouter();
+  const router = useRouter();
   const queryClient = useQueryClient();
 
   // Mutation createAgent
@@ -55,7 +56,9 @@ export const AgentForm = ({ onSuccess, onCancel, initialValues }: AgentFormProps
     },
     onError: (error) => {
       toast.error(error.message);
-      //TODO: Chek if error code is "FORBIDDEN" and redirect to /upgrade
+      if (error.data?.code === "FORBIDDEN") {
+        router.push("/upgrade");
+      }
     },
     })
   );
@@ -75,8 +78,7 @@ export const AgentForm = ({ onSuccess, onCancel, initialValues }: AgentFormProps
       onSuccess?.(); // Cierra el dialogo
     },
     onError: (error) => {
-      toast.error(error.message);
-      //TODO: Chek if error code is "FORBIDDEN" and redirect to /upgrade
+      toast.error(error.message);  
     },
   })
   );
