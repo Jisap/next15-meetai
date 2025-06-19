@@ -1,4 +1,4 @@
-import { baseProcedure, createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { baseProcedure, createTRPCRouter, premiumProcedure, protectedProcedure } from "@/trpc/init";
 import { agents } from '../../../db/schema';
 import { db } from "@/db";
 import { agentsInsertSchema, agentsUpdateSchema } from "../schemas";
@@ -125,7 +125,7 @@ export const agentsRouter = createTRPCRouter({
         totalPages,
       }
     }),
-  create: protectedProcedure
+  create: premiumProcedure("agents")  // Al usar premiumProcedure verificamos si el usuario tiene acceso a los recursos premium
     .input(agentsInsertSchema)
     .mutation(async ({ input, ctx }) => {
       const [createdAgent] = await db // Drizzle siempre devuelve un array
