@@ -1,4 +1,4 @@
-import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { createTRPCRouter, premiumProcedure, protectedProcedure } from "@/trpc/init";
 import { agents, meetings, user } from '../../../db/schema';
 import { db } from "@/db";
 import { z } from "zod";
@@ -86,7 +86,7 @@ export const meetingsRouter = createTRPCRouter({
       return updatedMeeting;
     }),
 
-  create: protectedProcedure
+  create: premiumProcedure("meetings")                                  // Al usar premiumProcedure verificamos si el usuario tiene acceso a los recursos premium
     .input(meetingsInsertSchema)
     .mutation(async ({ input, ctx }) => {                               // 1º Se crea un nuevo meeting en la base de datos y se crea una videollamada en la API de Stream Video
       const [createdMeeting] = await db                                 // Drizzle siempre devuelve un array

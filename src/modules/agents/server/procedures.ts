@@ -88,7 +88,7 @@ export const agentsRouter = createTRPCRouter({
         search: z.string().nullish(),                                   // Se espera un termino de búsqueda
       })
     )
-    .query(async ({ ctx, input }) => {                                    // Consulta recibiendo los filtros y el ctx con el usuario autenticado
+    .query(async ({ ctx, input }) => {                                  // Consulta recibiendo los filtros y el ctx con el usuario autenticado
       const { search, page, pageSize } = input;
       const data = await db                                             // Se obtienen los datos de la tabla agents
         .select({                                                       // Para ello se seleccionan las columnas de la tabla agents
@@ -125,7 +125,7 @@ export const agentsRouter = createTRPCRouter({
         totalPages,
       }
     }),
-  create: premiumProcedure("agents")  // Al usar premiumProcedure verificamos si el usuario tiene acceso a los recursos premium
+  create: premiumProcedure("agents")                                     // Al usar premiumProcedure verificamos si el usuario tiene acceso a los recursos premium
     .input(agentsInsertSchema)
     .mutation(async ({ input, ctx }) => {
       const [createdAgent] = await db // Drizzle siempre devuelve un array
