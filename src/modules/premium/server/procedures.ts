@@ -16,9 +16,11 @@ export const premiumRouter = createTRPCRouter({
     const customer = await polarClient.customers.getStateExternal({    // Obtenemos el id del cliente logueado. El id de la cuenta de polar es el id del user de better-auth
       externalId: ctx.auth.user.id,
     })
+    //console.log('customer', customer)
 
     const subscription = customer.activeSubscriptions[0];              // Con ese id obtenemos una suscripción activa 
-  
+    //console.log('subscription', subscription)
+
     if (!subscription) {                                               // Si el usuario no tiene una suscripción activa el procedimiento devuelve null
       return null
     }                                                                  
@@ -49,10 +51,10 @@ export const premiumRouter = createTRPCRouter({
 
     const subscription = customer.activeSubscriptions[0];              // Solo obtenemos una suscripción activa (definido en el dashboard de polar)
     
-    if(subscription){                                                  // Si el usuario tiene una suscripción activa el procedimiento devuelve null
+    if (subscription) {                                                // Si el usuario tiene una suscripción activa (es "premium") entonces los límites del planta gratuito no se le aplica y el procedimiento devuelve null
       return null
     }
-
+                                                                       // Si el usuario NO tiene una suscripción activa (es un usuario del plan gratuito), se procede a contar su uso.
     const [userMeetings] = await db                                    // Obtenemos el número de reuniones del usuario
       .select({
         count: count(meetings.id)

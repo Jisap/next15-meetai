@@ -5,7 +5,8 @@ import { LoadingState } from "@/components/loading-state"
 import { authClient } from "@/lib/auth-client"
 import { useTRPC } from "@/trpc/client"
 import { useSuspenseQuery } from "@tanstack/react-query"
-import { trpc } from '../../../../trpc/server';
+import { PricingCard } from "../components/pricing-card"
+
 
 export const UpgradeViewLoading = () => {
   return (
@@ -26,11 +27,20 @@ export const UpgradeViewError = () => {
 export const UpgradeView = () => {
 
   const trpc = useTRPC();
-  const baseQueryOptions = trpc.premium.getCurrentSubscription.queryOptions();
-  const { data: currentSubscription } = useSuspenseQuery({                      // Por defecto los usuarios tienen un plan free
-    ...baseQueryOptions,
+
+  const productsQueryOptions = trpc.premium.getProducts.queryOptions();
+  const { data: products } = useSuspenseQuery({                                 // Obtenemos todos los productos disponibles en polar
+    ...productsQueryOptions,
     retry: 3,
   })
+ 
+
+  const currentQueryOptions = trpc.premium.getCurrentSubscription.queryOptions();
+  const { data: currentSubscription } = useSuspenseQuery({                      // Obtiene la subs activa. (Si no hay subs es plan free devuelve null y se aplican limites de us0. 
+    ...currentQueryOptions,
+    retry: 3,
+  })
+ 
 
 
   return (
@@ -43,6 +53,52 @@ export const UpgradeView = () => {
           </span>{" "}
           plan
         </h5>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {products.map((product) => {
+            const isCurrentProduct = currentSubscription?.id === product.id;    // Subscripción actual del usuario
+            const isPremium = !!currentSubscription;                            // Si el usuario tiene una subscripción activa entonces es premium (true) -> no se aplican los límites de uso gratuitos
+            let buttonText = "Upgrade";
+            let onClick = () => authClient.checkout({ products: [product.id]})  // Se abre el checkout de polar
+
+            
+            if (isCurrentProduct) {                                             // El usuario ya tiene este plan, ofrecer gestión de suscripción                       
+              buttonText = "Manage"
+              onClick = () => authClient.customer.portal()
+            
+            } else if (isPremium) {                                             // El usuario es premium pero no tiene este plan, ofrecer cambio de plan                        
+              buttonText = "Change Plan"
+              onClick = () => authClient.customer.portal()
+            }
+
+            // Si ninguna de las anteriores es cierta, el usuario no es premium (plan gratuito) 
+            // -> Se usa el comportamiento por defecto: buttonText="Upgrade"
+            return (
+              <PricingCard 
+                key={product.id}
+                buttonText={buttonText}
+                onClick={onClick}
+                variant={
+                  product.metadata.variant === "highlighted"
+                    ? "highlighted"
+                    : "default"
+                }
+                title={product.name}
+                price={
+                  product.prices[0].amountType === "fixed"
+                    ? product.prices[0].priceAmount / 100
+                    : 0
+                }
+                description={product.description}
+                priceSuffix={`/${product.prices[0].recurringInterval}`}
+                features={product.benefits.map(
+                  (benefit) => benefit.description
+                )}
+                badge={product.metadata.badge as string | null}
+              />
+            )
+          })}
+        </div>
       </div>
     </div>
   )

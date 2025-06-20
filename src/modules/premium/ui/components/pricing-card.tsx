@@ -142,11 +142,12 @@ export const PricingCard = ({
             pricingCardSecondaryTextVariants({ variant })
           )}
         >
-          {features?.map((feature, index) => (
+          {features.map((feature, index) => (
             <li key={index} className="flex items-center gap-x-2.5">
               <CircleCheckIcon 
                 className={cn(pricingCardIconVariants({ variant }))}
               />
+              {feature}
             </li>
           ))}
         </ul>
