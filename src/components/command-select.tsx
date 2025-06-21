@@ -2,24 +2,12 @@
 import { useState, ReactNode } from "react"
 import { ChevronsUpDownIcon } from "lucide-react"
 import {
-  Command,
-  CommandDialog,
   CommandEmpty,
-  CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
   CommandResponsiveDialog,
-  CommandSeparator,
-  CommandShortcut,
 } from "@/components/ui/command"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import { Button } from "./ui/button"
 

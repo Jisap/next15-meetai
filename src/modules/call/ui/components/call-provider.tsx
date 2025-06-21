@@ -2,7 +2,7 @@
 
 import { authClient } from "@/lib/auth-client"
 import { generateAvatarUri } from "@/lib/avatar"
-import { Loader2Icon, MinusIcon } from 'lucide-react';
+import { Loader2Icon } from 'lucide-react';
 import { CallConnect } from "./call-connect";
 
 

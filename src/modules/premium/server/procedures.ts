@@ -6,7 +6,7 @@ import {
   protectedProcedure,
 } from '@/trpc/init';
 import { count, eq } from 'drizzle-orm';
-import { baseProcedure } from '../../../trpc/init';
+
 
 
 export const premiumRouter = createTRPCRouter({

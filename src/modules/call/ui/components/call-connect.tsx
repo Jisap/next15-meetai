@@ -12,7 +12,6 @@ import { LoaderIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import  "@stream-io/video-react-sdk/dist/css/styles.css"
 import { useMutation } from "@tanstack/react-query";
-import { trpc } from '../../../../trpc/server';
 import { CallUI } from "./call-ui";
 
 

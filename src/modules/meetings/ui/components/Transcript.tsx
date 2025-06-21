@@ -8,7 +8,7 @@ import { format } from "date-fns"
 import { SearchIcon } from "lucide-react"
 import { useState } from "react"
 import Highlighter from "react-highlight-words"
-import { trpc } from '../../../../trpc/server';
+
 
 
 

@@ -5,8 +5,7 @@ import { useQuery } from "@tanstack/react-query"
 import {  CommandItem } from "cmdk"
 import { useRouter } from "next/navigation"
 import { Dispatch, SetStateAction, useState } from "react"
-import { trpc } from '../../../../trpc/server';
-import { agents } from '../../../../db/schema';
+
 
 
 

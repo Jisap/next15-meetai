@@ -5,7 +5,7 @@ import { createTRPCContext } from "./init"; // Importa la función para crear el
 import { createCallerFactory } from "./init";
 import { makeQueryClient } from "./query-client";
 import { appRouter } from "./routers/_app";
-import { createTRPCClient, httpLink } from "@trpc/client";
+
 
 /**
  * Factory para crear "callers" de tRPC.
