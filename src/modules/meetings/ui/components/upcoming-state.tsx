@@ -5,11 +5,15 @@ import Link from "next/link"
 
  interface Props {
   meetingId: string;
-  onCancelMeeting: () => void;
+  //onCancelMeeting: () => void;
   isCancelling: boolean;
  }
 
-export const UpcommingState = ({ meetingId, onCancelMeeting, isCancelling }: Props) => {
+export const UpcommingState = ({ 
+  meetingId, 
+  //onCancelMeeting, 
+  isCancelling 
+}: Props) => {
 
   
 
