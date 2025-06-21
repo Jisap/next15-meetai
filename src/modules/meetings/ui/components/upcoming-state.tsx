@@ -22,7 +22,7 @@ export const UpcommingState = ({ meetingId, onCancelMeeting, isCancelling }: Pro
       />
 
       <div className="flex flex-col-reverse lg:flex-row lg:justify-center items-center gap-2 w-full">
-        <Button
+        {/* <Button
           variant="secondary"
           className="w-full lg:w-auto"
           onClick={onCancelMeeting}
@@ -30,7 +30,7 @@ export const UpcommingState = ({ meetingId, onCancelMeeting, isCancelling }: Pro
         >
           <BanIcon />
           Cancel Meeting
-        </Button>
+        </Button> */}
 
         <Button 
           asChild 
