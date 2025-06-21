@@ -1,5 +1,5 @@
 import { baseProcedure, createTRPCRouter, premiumProcedure, protectedProcedure } from "@/trpc/init";
-import { agents } from '../../../db/schema';
+import { agents, meetings } from '../../../db/schema';
 import { db } from "@/db";
 import { agentsInsertSchema, agentsUpdateSchema } from "../schemas";
 import { z } from "zod";
@@ -56,15 +56,15 @@ export const agentsRouter = createTRPCRouter({
     .query(async ({ input, ctx }) => {
       const [existingAgent] = await db
         .select({
-          // TODO: Change to actual count
-          meetingCount: sql<number>`5`,            // Se agrega una columna de tipo number llamada meetingCount
-          ...getTableColumns(agents),              // Se seleccionan todas las columnas de la tabla agents
+          ...getTableColumns(agents),                                         // Se seleccionan todas las columnas de la tabla agents
+          // subconsulta: reuniones asignadas al agente
+          meetingCount: db.$count(meetings, eq(agents.id, meetings.agentId)), // Contamos en la tabla meetings cuantas filas tienen el agentId igual al id del agente que estamos seleccionando
         })
         .from(agents)
         .where(
           and(
-            eq(agents.id, input.id),               // Filtra los agentes que coincidan con el id especificado
-            eq(agents.userId, ctx.auth.user.id)    // Filtra los agentes que pertenecen al usuario autenticado
+            eq(agents.id, input.id),                                          // Filtra los agentes que coincidan con el id especificado
+            eq(agents.userId, ctx.auth.user.id)                               // Filtra los agentes que pertenecen al usuario autenticado
 
           )
         )
@@ -92,9 +92,9 @@ export const agentsRouter = createTRPCRouter({
       const { search, page, pageSize } = input;
       const data = await db                                             // Se obtienen los datos de la tabla agents
         .select({                                                       // Para ello se seleccionan las columnas de la tabla agents
-          // TODO: Change to actual count
-          meetingCount: sql<number>`5`,                                 // Se agrega una columna de tipo number llamada meetingCount
           ...getTableColumns(agents),                                   // Se seleccionan todas las columnas de la tabla agents
+          // subconsulta: reuniones asignadas al agente
+          meetingCount: db.$count(meetings, eq(agents.id, meetings.agentId)), // Contamos en la tabla meetings cuantas filas tienen el agentId igual al id del agente que estamos seleccionando
         })
         .from(agents)
         .where(
