@@ -1,9 +1,12 @@
-import { polarClient } from "@polar-sh/better-auth"
+"use client"
+
+// import { polarClient } from "@polar-sh/better-auth"
 import { createAuthClient } from "better-auth/react"
 
 
 
 
 export const authClient = createAuthClient({
-  plugins: [polarClient()]
+  // TODO: Re-enable Polar plugin once the createRequire issue is resolved
+  // plugins: [polarClient()]
 })
